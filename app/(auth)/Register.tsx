@@ -8,10 +8,10 @@ import {
   Alert 
 } from "react-native";
 import { useRouter } from "expo-router"; 
-import InputField from "../../src/components/generic/inputField";
-import PrimaryButton from "../../src/components/generic/primaryButton";
-import LinkText from "../../src/components/generic/linkText";
-import { useAuth } from "../../hooks/UseAuth";
+import InputField from "../../components/generic/InputField";
+import PrimaryButton from "../../components/generic/PrimaryButton";
+import LinkText from "../../components/generic/LinkText";
+import { useAuth } from "../../hooks/useAuth";
 
 export default function RegisterScreen() {
   const { register } = useAuth();

@@ -10,10 +10,10 @@ import {
 } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import { useRouter } from "expo-router"; // ✅
-import LogoHeader from "../../src/components/generic/logoHeader";
-import PrimaryButton from "../../src/components/generic/primaryButton";
-import LinkText from "../../src/components/generic/linkText";
-import { useAuth } from "../../hooks/UseAuth";
+import LogoHeader from "../../components/generic/LogoHeader";
+import PrimaryButton from "../../components/generic/PrimaryButton";
+import LinkText from "../../components/generic/LinkText";
+import { useAuth } from "../../hooks/useAuth";
 
 export default function LoginScreen() {
   const { login } = useAuth();
