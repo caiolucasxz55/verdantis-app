@@ -2,19 +2,7 @@
 import React, { createContext, useState, useEffect } from "react";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { Alert } from "react-native";
-
-interface User {
-  name: string;
-  email: string;
-}
-
-interface AuthContextData {
-  user: User | null;
-  loading: boolean;
-  signIn: (email: string, password: string) => Promise<void>;
-  register: (name: string, email: string, password: string) => Promise<void>;
-  signOut: () => Promise<void>;
-}
+import { User, RegisterData, AuthContextData } from "../types/auth"; // ✅ importando types
 
 export const AuthContext = createContext<AuthContextData>({} as AuthContextData);
 
@@ -22,7 +10,6 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const [user, setUser] = useState<User | null>(null);
   const [loading, setLoading] = useState(true);
 
-  
   useEffect(() => {
     async function loadUserData() {
       try {
@@ -37,53 +24,63 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     loadUserData();
   }, []);
 
-  async function signIn(email: string, password: string) {
-    // Simula uma autenticação (substitua por chamada de API real)
+  async function login(email: string, password: string): Promise<User | null> {
     try {
-      if (email === "" || password === "") {
+      if (!email || !password) {
         Alert.alert("Erro", "Preencha todos os campos!");
-        return;
+        return null;
       }
 
-      const mockUser: User = { name: "Usuário Demo", email };
-      await AsyncStorage.setItem("@user", JSON.stringify(mockUser));
-      setUser(mockUser);
+      const storedUser = await AsyncStorage.getItem("@user");
+      if (!storedUser) {
+        Alert.alert("Erro", "Usuário não encontrado. Cadastre-se primeiro!");
+        return null;
+      }
+
+      const parsedUser: User & { password?: string } = JSON.parse(storedUser);
+      if (parsedUser.email === email) {
+        setUser(parsedUser);
+        return parsedUser;
+      } else {
+        Alert.alert("Erro", "Credenciais inválidas!");
+        return null;
+      }
     } catch (error) {
+      console.log("Erro no login:", error);
       Alert.alert("Erro", "Falha ao fazer login.");
-      console.log(error);
+      return null;
     }
   }
 
-  async function register(name: string, email: string, password: string) {
-    // Simula um cadastro local
+  async function register({ email, password, role }: RegisterData) {
     try {
-      if (!name || !email || !password) {
+      if (!email || !password || !role) {
         Alert.alert("Erro", "Preencha todos os campos!");
         return;
       }
 
-      const newUser: User = { name, email };
+      const newUser: User & { password: string } = { email, role, password };
       await AsyncStorage.setItem("@user", JSON.stringify(newUser));
-      setUser(newUser);
+      setUser({ email, role });
       Alert.alert("Sucesso", "Usuário cadastrado com sucesso!");
     } catch (error) {
-      Alert.alert("Erro", "Falha ao cadastrar.");
-      console.log(error);
+      console.log("Erro no registro:", error);
+      Alert.alert("Erro", "Falha ao cadastrar usuário.");
     }
   }
 
-  async function signOut() {
+  async function logout() {
     try {
       await AsyncStorage.removeItem("@user");
       setUser(null);
     } catch (error) {
-      Alert.alert("Erro", "Falha ao sair.");
-      console.log(error);
+      console.log("Erro ao sair:", error);
+      Alert.alert("Erro", "Falha ao sair da conta.");
     }
   }
 
   return (
-    <AuthContext.Provider value={{ user, loading, signIn, register, signOut }}>
+    <AuthContext.Provider value={{ user, loading, login, register, logout }}>
       {children}
     </AuthContext.Provider>
   );
