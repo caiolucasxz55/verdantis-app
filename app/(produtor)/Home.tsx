@@ -47,15 +47,6 @@ const Home: React.FC = () => {
             <Ionicons name="leaf" size={28} color="#32CD32" />
             <Text style={styles.actionText}>Registrar Lote</Text>
           </TouchableOpacity>
-
-          <TouchableOpacity
-            style={styles.actionButton}
-            activeOpacity={0.8}
-            onPress={() => router.push("/(produtor)/funcionalidades/ScannerQR")}
-          >
-            <Ionicons name="qr-code" size={28} color="#32CD32" />
-            <Text style={styles.actionText}>Escanear</Text>
-          </TouchableOpacity>
         </View>
       </View>
 

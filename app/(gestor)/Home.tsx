@@ -1,6 +1,5 @@
-// app/(gestor)/Home.tsx
-import React, { useContext } from "react";
-import { View, Text, StyleSheet, FlatList, TouchableOpacity } from "react-native";
+import React from "react";
+import { View, Text, StyleSheet, FlatList, TouchableOpacity, ScrollView } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import { useRouter } from "expo-router";
 import { useAuth } from "../../hooks/useAuth";
@@ -19,89 +18,179 @@ export default function Home() {
   const ranking = [...fazendas].sort((a, b) => b.producao - a.producao);
 
   return (
-    <View style={styles.container}>
-      <Text style={styles.header}>🌿 Olá, {user?.email || "Gestor"}!</Text>
-      <Text style={styles.subHeader}>Suas Fazendas Registradas:</Text>
+    <ScrollView style={styles.container} showsVerticalScrollIndicator={false}>
+      {/* Header */}
+      <View style={styles.header}>
+        <Text style={styles.greeting}>Olá, {user?.email?.split("@")[0] || "Gestor"} 👋</Text>
+        <Text style={styles.subGreeting}>Gerencie suas propriedades com transparência.</Text>
+      </View>
 
-      <FlatList
-        data={fazendas}
-        keyExtractor={(item) => item.id}
-        renderItem={({ item }) => (
-          <View style={styles.card}>
-            <View>
-              <Text style={styles.fazendaNome}>{item.nome}</Text>
-              <Text style={styles.fazendaCultura}>🌱 {item.cultura}</Text>
+      {/* Ações principais */}
+      <View style={styles.actionsRow}>
+        <TouchableOpacity
+          style={[styles.actionButton, { backgroundColor: "#e8f5e9" }]}
+          onPress={() => router.push("/(gestor)/funcionalidades/FeedAtividades")}
+        >
+          <Ionicons name="newspaper-outline" size={28} color="#1b5e20" />
+          <Text style={styles.actionText}>Atividades</Text>
+        </TouchableOpacity>
+
+        <TouchableOpacity
+          style={[styles.actionButton, { backgroundColor: "#f1f8e9" }]}
+          onPress={() => router.push("/(gestor)/funcionalidades/Observacao")}
+        >
+          <Ionicons name="business-outline" size={28} color="#2e7d32" />
+          <Text style={styles.actionText}>Fazendas</Text>
+        </TouchableOpacity>
+
+        <TouchableOpacity
+          style={[styles.actionButton, { backgroundColor: "#e0f2f1" }]}
+          onPress={() => router.push("/(gestor)/funcionalidades/ScannerQR")}
+        >
+          <Ionicons name="qr-code-outline" size={28} color="#388e3c" />
+          <Text style={styles.actionText}>Scanner</Text>
+        </TouchableOpacity>
+      </View>
+
+      {/* Fazendas registradas */}
+      <View style={styles.section}>
+        <Text style={styles.sectionTitle}>Suas Fazendas</Text>
+        <FlatList
+          data={fazendas}
+          keyExtractor={(item) => item.id}
+          scrollEnabled={false}
+          renderItem={({ item }) => (
+            <View style={styles.card}>
+              <View>
+                <Text style={styles.fazendaNome}>{item.nome}</Text>
+                <Text style={styles.fazendaCultura}>🌱 {item.cultura}</Text>
+              </View>
+              <Text style={styles.producaoText}>{item.producao} ton</Text>
             </View>
-            <Text style={styles.producaoText}>{item.producao} ton</Text>
-          </View>
-        )}
-      />
+          )}
+        />
+      </View>
 
-      <View style={styles.rankingCard}>
-        <Text style={styles.rankingTitle}>🏆 Top Produções</Text>
+      {/* Ranking */}
+      <View style={styles.section}>
+        <Text style={styles.sectionTitle}>🏆 Ranking de Produção</Text>
         {ranking.map((item, index) => (
           <View key={item.id} style={styles.rankingItem}>
-            <Text style={styles.rankingPosition}>{index + 1}º</Text>
-            <View style={{ flex: 1 }}>
+            <View style={styles.rankLeft}>
+              <Text style={[styles.rankingPos, { color: index === 0 ? "#1b5e20" : "#555" }]}>
+                {index + 1}º
+              </Text>
               <Text style={styles.rankingName}>{item.nome}</Text>
-              <Text style={styles.rankingCulture}>{item.cultura}</Text>
             </View>
             <Text style={styles.rankingValue}>{item.producao} ton</Text>
           </View>
         ))}
       </View>
 
-      <TouchableOpacity style={styles.button} onPress={() => router.push("/(gestor)/Dashboard")}>
-        <Ionicons name="bar-chart-outline" size={20} color="#fff" />
-        <Text style={styles.buttonText}>Ver Dashboard</Text>
+      {/* Dashboard */}
+      <TouchableOpacity
+        style={styles.dashboardButton}
+        onPress={() => router.push("/(gestor)/Dashboard")}
+        activeOpacity={0.9}
+      >
+        <Ionicons name="bar-chart-outline" size={22} color="#fff" />
+        <Text style={styles.dashboardText}>Ver Dashboard</Text>
       </TouchableOpacity>
-    </View>
+    </ScrollView>
   );
 }
 
 const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: "#f7fdf8", padding: 20 },
-  header: { fontSize: 22, fontWeight: "bold", color: "#1b5e20", marginTop: 20 },
-  subHeader: { fontSize: 15, color: "#555", marginBottom: 10 },
+  container: {
+    flex: 1,
+    backgroundColor: "#f9fafb",
+    paddingHorizontal: 20,
+    paddingTop: 60,
+  },
+  header: {
+    marginBottom: 24,
+  },
+  greeting: {
+    fontSize: 26,
+    fontWeight: "700",
+    color: "#1b5e20",
+  },
+  subGreeting: {
+    fontSize: 15,
+    color: "#666",
+    marginTop: 4,
+  },
+  actionsRow: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    marginBottom: 28,
+  },
+  actionButton: {
+    flex: 1,
+    alignItems: "center",
+    borderRadius: 14,
+    paddingVertical: 16,
+    marginHorizontal: 6,
+    shadowColor: "#000",
+    shadowOpacity: 0.05,
+    shadowRadius: 5,
+    elevation: 2,
+  },
+  actionText: {
+    fontSize: 13,
+    fontWeight: "600",
+    color: "#1b5e20",
+    marginTop: 6,
+  },
+  section: {
+    marginBottom: 22,
+  },
+  sectionTitle: {
+    fontSize: 18,
+    fontWeight: "700",
+    color: "#1b5e20",
+    marginBottom: 10,
+  },
   card: {
     flexDirection: "row",
     justifyContent: "space-between",
     backgroundColor: "#fff",
     borderRadius: 14,
-    padding: 15,
+    padding: 16,
     marginVertical: 6,
     shadowColor: "#000",
-    shadowOpacity: 0.05,
-    shadowRadius: 5,
+    shadowOpacity: 0.04,
+    shadowRadius: 6,
     elevation: 2,
   },
   fazendaNome: { fontWeight: "bold", fontSize: 16, color: "#333" },
   fazendaCultura: { color: "#777", marginTop: 3 },
   producaoText: { fontWeight: "bold", color: "#2e7d32" },
-  rankingCard: {
+  rankingItem: {
+    flexDirection: "row",
+    justifyContent: "space-between",
     backgroundColor: "#fff",
     borderRadius: 12,
-    padding: 15,
-    marginTop: 20,
-    shadowColor: "#000",
-    shadowOpacity: 0.05,
-    shadowRadius: 5,
-    elevation: 2,
+    padding: 12,
+    marginVertical: 5,
+    elevation: 1,
   },
-  rankingTitle: { fontSize: 17, fontWeight: "bold", color: "#1b5e20", marginBottom: 10 },
-  rankingItem: { flexDirection: "row", alignItems: "center", marginVertical: 4 },
-  rankingPosition: { width: 25, fontSize: 16, fontWeight: "bold", color: "#388e3c" },
-  rankingName: { fontSize: 15, fontWeight: "600", color: "#333" },
-  rankingCulture: { fontSize: 13, color: "#777" },
-  rankingValue: { fontWeight: "bold", color: "#2e7d32" },
-  button: {
+  rankLeft: {
     flexDirection: "row",
-    backgroundColor: "#2e7d32",
-    padding: 14,
-    borderRadius: 10,
+    alignItems: "center",
+  },
+  rankingPos: { fontSize: 16, fontWeight: "bold", marginRight: 8 },
+  rankingName: { fontSize: 15, fontWeight: "600", color: "#333" },
+  rankingValue: { fontWeight: "700", color: "#2e7d32" },
+  dashboardButton: {
+    backgroundColor: "#1b5e20",
+    flexDirection: "row",
     alignItems: "center",
     justifyContent: "center",
-    marginTop: 25,
+    padding: 16,
+    borderRadius: 12,
+    marginTop: 15,
+    marginBottom: 40,
   },
-  buttonText: { color: "#fff", fontWeight: "bold", marginLeft: 8 },
+  dashboardText: { color: "#fff", fontWeight: "bold", marginLeft: 8 },
 });
