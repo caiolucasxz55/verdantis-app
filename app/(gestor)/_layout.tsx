@@ -55,6 +55,10 @@ export default function GestorLayout() {
             ),
           }}
         />
+        <Tabs.Screen
+          name="(funcionalidades)"
+          options={{ href: null }}
+        />
       </Tabs>
     </SafeAreaView>
   );
