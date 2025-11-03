@@ -8,10 +8,10 @@ export default function Index() {
   const router = useRouter();
 
   useEffect(() => {
-    // Espera o carregamento inicial do AuthContext
+   
     if (!loading) {
       if (!user) {
-        // Usuário não autenticado → vai para Login
+        
         router.replace("/(auth)/Login");
       } else if (user.role === "Gestor") {
         router.replace("/(gestor)/Home");
@@ -21,7 +21,7 @@ export default function Index() {
     }
   }, [user, loading]);
 
-  // Tela de carregamento inicial
+  
   return (
     <View style={styles.container}>
       <ActivityIndicator size="large" color="#2e7d32" />

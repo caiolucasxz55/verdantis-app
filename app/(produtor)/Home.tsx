@@ -1,6 +1,7 @@
 import React from "react";
 import { ScrollView, View, Text, StyleSheet, Image, TouchableOpacity } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
+import { useRouter } from "expo-router";
 
 const crops = [
   { name: "Milho", img: require("../../assets/milho-img.png") },
@@ -9,6 +10,8 @@ const crops = [
 ];
 
 const Home: React.FC = () => {
+  const router = useRouter();
+
   return (
     <ScrollView style={styles.container} showsVerticalScrollIndicator={false}>
       <View style={styles.header}>
@@ -27,17 +30,29 @@ const Home: React.FC = () => {
       <View style={styles.section}>
         <Text style={styles.sectionTitle}>Ações rápidas</Text>
         <View style={styles.actions}>
-          <TouchableOpacity style={styles.actionButton} activeOpacity={0.8}>
+          <TouchableOpacity
+            style={styles.actionButton}
+            activeOpacity={0.8}
+            onPress={() => router.push("/(produtor)/funcionalidades/Propriedade")}
+          >
             <Ionicons name="map" size={28} color="#32CD32" />
             <Text style={styles.actionText}>Propriedade</Text>
           </TouchableOpacity>
 
-          <TouchableOpacity style={styles.actionButton} activeOpacity={0.8}>
+          <TouchableOpacity
+            style={styles.actionButton}
+            activeOpacity={0.8}
+            onPress={() => router.push("/(produtor)/funcionalidades/RegistroLote")}
+          >
             <Ionicons name="leaf" size={28} color="#32CD32" />
             <Text style={styles.actionText}>Registrar Lote</Text>
           </TouchableOpacity>
 
-          <TouchableOpacity style={styles.actionButton} activeOpacity={0.8}>
+          <TouchableOpacity
+            style={styles.actionButton}
+            activeOpacity={0.8}
+            onPress={() => router.push("/(produtor)/funcionalidades/ScannerQR")}
+          >
             <Ionicons name="qr-code" size={28} color="#32CD32" />
             <Text style={styles.actionText}>Escanear</Text>
           </TouchableOpacity>
