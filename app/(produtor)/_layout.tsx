@@ -1,10 +1,12 @@
-// app/(produtor)/_layout.tsx
 import { Tabs } from "expo-router";
 import { Ionicons } from "@expo/vector-icons";
+import React from "react";
+import { SafeAreaView } from "react-native-safe-area-context";
 
 export default function ProdutorLayout() {
   return (
-    <Tabs
+    <SafeAreaView style={{ flex: 1, backgroundColor: "#f7f9fa" }} edges={['top', 'left', 'right', 'bottom']}>
+      <Tabs
       screenOptions={{
         headerShown: false,
         tabBarActiveTintColor: "#2e7d32",
@@ -12,8 +14,8 @@ export default function ProdutorLayout() {
         tabBarStyle: {
           backgroundColor: "#fff",
           borderTopColor: "#ddd",
-          paddingBottom: 5,
           height: 60,
+          paddingBottom: 4,
         },
       }}
     >
@@ -26,7 +28,6 @@ export default function ProdutorLayout() {
           ),
         }}
       />
-
       <Tabs.Screen
         name="Dashboard"
         options={{
@@ -36,7 +37,6 @@ export default function ProdutorLayout() {
           ),
         }}
       />
-
       <Tabs.Screen
         name="Contact"
         options={{
@@ -46,7 +46,6 @@ export default function ProdutorLayout() {
           ),
         }}
       />
-
       <Tabs.Screen
         name="Profile"
         options={{
@@ -57,5 +56,6 @@ export default function ProdutorLayout() {
         }}
       />
     </Tabs>
+    </SafeAreaView> 
   );
 }

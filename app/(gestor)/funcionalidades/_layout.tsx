@@ -1,7 +1,9 @@
 import { Stack } from "expo-router";
+import { SafeAreaView } from "react-native-safe-area-context";
 
 export default function FuncionalidadesLayout() {
   return (
+     <SafeAreaView style={{ flex: 1, backgroundColor: "#f7f9fa" }} edges={['top', 'left', 'right', 'bottom']}>
     <Stack
       screenOptions={{
         headerStyle: { backgroundColor: "#ffffff" },
@@ -23,5 +25,6 @@ export default function FuncionalidadesLayout() {
         options={{ title: "Scanner QR" }}
       />
     </Stack>
+    </SafeAreaView>
   );
 }

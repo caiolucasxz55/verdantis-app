@@ -1,11 +1,13 @@
 import React from "react";
-import { View, Text, StyleSheet, ScrollView, Dimensions } from "react-native";
+import { View, Text, StyleSheet, ScrollView, useWindowDimensions } from "react-native";
 import { LineChart, BarChart } from "react-native-chart-kit";
 import { Ionicons } from "@expo/vector-icons";
 
-const screenWidth = Dimensions.get("window").width - 40;
-
 const Dashboard: React.FC = () => {
+  const { width } = useWindowDimensions(); 
+
+  const chartWidth = width - 60;
+
   return (
     <ScrollView style={styles.container} showsVerticalScrollIndicator={false}>
       <Text style={styles.title}>Painel de Produção 🌱</Text>
@@ -22,7 +24,7 @@ const Dashboard: React.FC = () => {
             labels: ["Jan", "Fev", "Mar", "Abr", "Mai", "Jun"],
             datasets: [{ data: [800, 950, 1100, 1250, 1200, 1450] }],
           }}
-          width={screenWidth}
+          width={chartWidth}
           height={220}
           yAxisSuffix="kg"
           chartConfig={{
@@ -39,7 +41,7 @@ const Dashboard: React.FC = () => {
             },
           }}
           bezier
-          style={styles.chart}
+          style={{ borderRadius: 16, alignSelf: "center" }}
         />
       </View>
 
@@ -55,10 +57,11 @@ const Dashboard: React.FC = () => {
             labels: ["Jan", "Fev", "Mar", "Abr", "Mai", "Jun"],
             datasets: [{ data: [100, 90, 85, 80, 78, 75] }],
           }}
-          width={screenWidth}
-          height={220}
+          width={chartWidth}
+          height={250}
           yAxisLabel=""
-          yAxisSuffix="L"
+          yAxisSuffix="t"
+          fromZero
           chartConfig={{
             backgroundGradientFrom: "#E8F3E8",
             backgroundGradientTo: "#F8FBF8",
@@ -67,7 +70,7 @@ const Dashboard: React.FC = () => {
             labelColor: (opacity = 1) => `rgba(51, 94, 73, ${opacity})`,
           }}
           showValuesOnTopOfBars
-          style={styles.chart}
+          style={{ borderRadius: 16, alignSelf: "center" }}
         />
       </View>
 
@@ -111,7 +114,6 @@ const styles = StyleSheet.create({
   },
   cardHeader: { flexDirection: "row", alignItems: "center", marginBottom: 12 },
   cardTitle: { fontSize: 18, fontWeight: "600", marginLeft: 8, color: "#1D6B3A" },
-  chart: { borderRadius: 16 },
   value: { fontSize: 24, fontWeight: "700", color: "#2E7D32" },
   subtitle: { fontSize: 14, color: "#557C68", marginTop: 4 },
   progressCard: { alignItems: "center" },
