@@ -1,26 +1,34 @@
+export interface UserType {
+  userTypeId: number;
+  userDescription: "Gestor" | "Produtor";
+}
 
 export interface User {
-  email: string;
-  role: "Gestor" | "Produtor";
+  userId?: number;
+  userName: string;
+  registrationDate: string;
+  userType: UserType;
+  cpf?: string;
+  email?: string;
+  telefone?: string;
+  cnpj?: string | null;
+  empresa?: string | null;
 }
-
-export interface LoginData {
-  email: string;
-  password: string;
-}
-
 
 export interface RegisterData {
+  userType: "Gestor" | "Produtor";
+  nome: string;
+  cpf: string;
   email: string;
-  password: string;
-  role: "Gestor" | "Produtor";
+  telefone: string;
+  cnpj?: string;
+  empresa?: string;
 }
-
 
 export interface AuthContextData {
   user: User | null;
   loading: boolean;
-  login: (email: string, password: string) => Promise<User | null>;
-  register: (userData: RegisterData) => Promise<void>;
-  logout: () => Promise<void>;
+  login: (email: string, cpf: string) => Promise<User | null>;
+  register: (data: RegisterData) => Promise<void>;
+  logout: () => void;
 }

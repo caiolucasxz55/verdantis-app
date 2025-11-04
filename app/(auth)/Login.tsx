@@ -1,4 +1,4 @@
-import React, { useState, useContext } from "react";
+import React, { useState } from "react";
 import {
   View,
   StyleSheet,
@@ -9,7 +9,7 @@ import {
   TextInput,
 } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
-import { useRouter } from "expo-router"; // ✅
+import { useRouter } from "expo-router";
 import LogoHeader from "../../components/generic/LogoHeader";
 import PrimaryButton from "../../components/generic/PrimaryButton";
 import LinkText from "../../components/generic/LinkText";
@@ -17,18 +17,37 @@ import { useAuth } from "../../hooks/useAuth";
 
 export default function LoginScreen() {
   const { login } = useAuth();
-  const router = useRouter(); // ✅
+  const router = useRouter();
+
   const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
+  const [cpf, setCpf] = useState("");
 
   const handleLogin = async () => {
     try {
-      const user = await login(email, password);
-      if (user?.role === "Gestor") router.replace("/(gestor)/Home");
-      else if (user?.role === "Produtor") router.replace("/(produtor)/Home");
-      else router.replace("/(auth)/Login");
+      if (!email || !cpf) {
+        Alert.alert("Erro", "Informe seu e-mail e CPF.");
+        return;
+      }
+
+      // 🔹 Agora o login busca o usuário pelo email e cpf
+      const user = await login(email.trim().toLowerCase(), cpf.trim());
+
+      if (!user) {
+        Alert.alert("Erro", "Usuário não encontrado!");
+        return;
+      }
+
+      const role = user.userType?.userDescription;
+
+      if (role === "Gestor") {
+        router.replace("/(gestor)/Home");
+      } else if (role === "Produtor") {
+        router.replace("/(produtor)/Home");
+      } else {
+        Alert.alert("Aviso", "Tipo de usuário não reconhecido.");
+      }
     } catch (err: any) {
-      Alert.alert("Erro", err.message);
+      Alert.alert("Erro", err.message || "Falha ao realizar login.");
     }
   };
 
@@ -46,29 +65,35 @@ export default function LoginScreen() {
           <Ionicons name="mail-outline" size={20} color="#4ade80" style={styles.icon} />
           <TextInput
             style={styles.loginInput}
-            placeholder="Email"
+            placeholder="E-mail"
             placeholderTextColor="#888"
             value={email}
             onChangeText={setEmail}
             autoCapitalize="none"
+            keyboardType="email-address"
           />
         </View>
 
         <View style={styles.inputWrapper}>
-          <Ionicons name="lock-closed-outline" size={20} color="#4ade80" style={styles.icon} />
+          <Ionicons name="id-card-outline" size={20} color="#4ade80" style={styles.icon} />
           <TextInput
             style={styles.loginInput}
-            placeholder="Senha"
+            placeholder="CPF"
             placeholderTextColor="#888"
-            secureTextEntry
-            value={password}
-            onChangeText={setPassword}
+            value={cpf}
+            onChangeText={setCpf}
+            keyboardType="numeric"
           />
         </View>
 
-        <PrimaryButton label="Entrar" onPress={handleLogin} style={{ marginTop: 25, width: "100%" }} />
+        <PrimaryButton
+          label="Entrar"
+          onPress={handleLogin}
+          style={{ marginTop: 25, width: "100%" }}
+        />
 
         <Text style={styles.orText}>ou continue com</Text>
+
         <View style={styles.socialContainer}>
           <TouchableOpacity style={styles.socialButton}>
             <Ionicons name="logo-google" size={22} color="#DB4437" />
@@ -82,7 +107,7 @@ export default function LoginScreen() {
           <LinkText
             text="Ainda não tem conta?"
             highlight="Cadastre-se"
-            onPress={() => router.push("/(auth)/Register")} // ✅
+            onPress={() => router.push("/(auth)/Register")}
           />
         </View>
       </View>
