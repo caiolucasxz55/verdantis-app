@@ -1,6 +1,13 @@
+// types/auth.ts
+
 export interface UserType {
   userTypeId: number;
-  userDescription: "Gestor" | "Produtor";
+  userDescription?: string;
+}
+
+export interface Contact {
+  contactType: { contactTypeId: number };
+  value: string;
 }
 
 export interface User {
@@ -8,9 +15,7 @@ export interface User {
   userName: string;
   registrationDate: string;
   userType: UserType;
-  cpf?: string;
-  email?: string;
-  telefone?: string;
+  contacts?: Contact[];
   cnpj?: string | null;
   empresa?: string | null;
 }
@@ -18,7 +23,6 @@ export interface User {
 export interface RegisterData {
   userType: "Gestor" | "Produtor";
   nome: string;
-  cpf: string;
   email: string;
   telefone: string;
   cnpj?: string;
@@ -28,7 +32,7 @@ export interface RegisterData {
 export interface AuthContextData {
   user: User | null;
   loading: boolean;
-  login: (email: string, cpf: string) => Promise<User | null>;
+  login: (email: string) => Promise<User | null>; // 👈 AQUI ESTÁ A MUDANÇA!
   register: (data: RegisterData) => Promise<void>;
-  logout: () => void;
+  logout: () => Promise<void>;
 }

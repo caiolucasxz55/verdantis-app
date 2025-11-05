@@ -20,17 +20,20 @@ export default function LoginScreen() {
   const router = useRouter();
 
   const [email, setEmail] = useState("");
-  const [cpf, setCpf] = useState("");
 
   const handleLogin = async () => {
     try {
-      if (!email || !cpf) {
-        Alert.alert("Erro", "Informe seu e-mail e CPF.");
+      if (!email) {
+        Alert.alert("Erro", "Informe seu e-mail para continuar.");
         return;
       }
 
-      // 🔹 Agora o login busca o usuário pelo email e cpf
-      const user = await login(email.trim().toLowerCase(), cpf.trim());
+      // 🔹 Login apenas com e-mail agora
+      const user = await login(email.trim().toLowerCase());
+  if (!user) {
+    Alert.alert("Erro", "Usuário não encontrado!");
+    return;
+  }
 
       if (!user) {
         Alert.alert("Erro", "Usuário não encontrado!");
@@ -71,18 +74,6 @@ export default function LoginScreen() {
             onChangeText={setEmail}
             autoCapitalize="none"
             keyboardType="email-address"
-          />
-        </View>
-
-        <View style={styles.inputWrapper}>
-          <Ionicons name="id-card-outline" size={20} color="#4ade80" style={styles.icon} />
-          <TextInput
-            style={styles.loginInput}
-            placeholder="CPF"
-            placeholderTextColor="#888"
-            value={cpf}
-            onChangeText={setCpf}
-            keyboardType="numeric"
           />
         </View>
 

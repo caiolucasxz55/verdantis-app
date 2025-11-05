@@ -9,8 +9,9 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const [user, setUser] = useState<User | null>(null);
   const [loading, setLoading] = useState(true);
 
-  // ⚠️ Altere o IP abaixo para o IP local da sua máquina (use seu IP na rede local)
-  const API_URL = "http://192.168.0.10:8080";
+  // ⚙️ Altere o IP conforme sua rede local (Java rodando na porta 8080)
+ const API_URL = "http://192.168.15.19:8080";
+
 
   useEffect(() => {
     async function loadUserData() {
@@ -26,62 +27,66 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     loadUserData();
   }, []);
 
-  // 🔹 LOGIN — valida com e-mail e CPF
-  async function login(email: string, cpf: string): Promise<User | null> {
-    try {
-      if (!email.trim() || !cpf.trim()) {
-        Alert.alert("Erro", "Informe o e-mail e CPF.");
-        return null;
-      }
-
-      const response = await fetch(`${API_URL}/users`);
-      if (!response.ok) throw new Error("Erro ao buscar usuários.");
-
-      const allUsers: User[] = await response.json();
-
-      const foundUser = allUsers.find(
-        (u) =>
-          u.email?.toLowerCase() === email.toLowerCase() &&
-          u.cpf?.replace(/\D/g, "") === cpf.replace(/\D/g, "")
-      );
-
-      if (!foundUser) {
-        Alert.alert("Erro", "Usuário não encontrado!");
-        return null;
-      }
-
-      await AsyncStorage.setItem("@user", JSON.stringify(foundUser));
-      setUser(foundUser);
-      return foundUser;
-    } catch (error) {
-      console.log("Erro no login:", error);
-      Alert.alert("Erro", "Falha ao realizar login.");
+  // 🔹 LOGIN — agora apenas com e-mail
+  async function login(email: string): Promise<User | null> {
+  try {
+    if (!email.trim()) {
+      Alert.alert("Erro", "Informe o e-mail para login.");
       return null;
     }
-  }
 
-  // 🔹 REGISTRO — envia JSON completo compatível com o modelo Java
+    const response = await fetch(`${API_URL}/users`);
+    if (!response.ok) throw new Error("Erro ao buscar usuários.");
+
+    const allUsers: User[] = await response.json();
+
+    console.log("=== USUÁRIOS RECEBIDOS ===");
+    console.log(JSON.stringify(allUsers, null, 2));
+
+    // 🔍 busca por qualquer contato que contenha o e-mail informado
+    const foundUser = allUsers.find((u) =>
+      u.contacts?.some((c) =>
+        c.value?.toLowerCase().trim() === email.toLowerCase().trim()
+      )
+    );
+
+    if (!foundUser) {
+      Alert.alert("Erro", "Usuário não encontrado!");
+      return null;
+    }
+
+    await AsyncStorage.setItem("@user", JSON.stringify(foundUser));
+    setUser(foundUser);
+    return foundUser;
+  } catch (error) {
+    console.log("Erro no login:", error);
+    Alert.alert("Erro", "Falha ao realizar login.");
+    return null;
+  }
+}
+
+  // 🔹 REGISTRO — envia JSON compatível com o modelo Java
   async function register(data: RegisterData) {
     try {
-      const { userType, nome, cpf, email, telefone, cnpj, empresa } = data;
+      const { userType, nome, email, telefone, cnpj, empresa } = data;
 
-      if (!nome || !cpf || !email || !telefone) {
+      if (!nome || !email || !telefone) {
         Alert.alert("Erro", "Preencha todos os campos obrigatórios.");
         return;
       }
 
+      // Monta o corpo da requisição conforme o modelo do back-end
       const newUser = {
         userName: nome,
         registrationDate: new Date().toISOString(),
-        userType: {
-          userTypeId: userType === "Gestor" ? 1 : 2,
-          userDescription: userType,
-        },
-        cpf,
-        email,
-        telefone,
-        cnpj: userType === "Gestor" ? cnpj || null : null,
-        empresa: userType === "Gestor" ? empresa || null : null,
+        userType: { userTypeId: userType === "Gestor" ? 1 : 2 },
+        contacts: [
+          { contactType: { contactTypeId: 1 }, value: telefone },
+          { contactType: { contactTypeId: 2 }, value: email },
+        ],
+        ...(userType === "Gestor" && cnpj && empresa
+          ? { cnpj, empresa }
+          : {}),
       };
 
       const response = await fetch(`${API_URL}/users`, {
@@ -103,7 +108,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     }
   }
 
-  // 🔹 LOGOUT — limpa o armazenamento local
+  // 🔹 LOGOUT
   async function logout() {
     try {
       await AsyncStorage.removeItem("@user");

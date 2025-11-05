@@ -20,37 +20,36 @@ export default function RegisterScreen() {
 
   const [selectedRole, setSelectedRole] = useState<"Gestor" | "Produtor" | null>(null);
 
-  // Campos comuns
   const [nome, setNome] = useState("");
-  const [cpf, setCpf] = useState("");
   const [email, setEmail] = useState("");
   const [telefone, setTelefone] = useState("");
-
-  // Campos específicos do Gestor
   const [cnpj, setCnpj] = useState("");
   const [empresa, setEmpresa] = useState("");
 
   const handleRegister = async () => {
-    if (!selectedRole) return Alert.alert("Erro", "Selecione um tipo de usuário.");
-    if (!nome || !cpf || !email || !telefone)
+    if (!selectedRole)
+      return Alert.alert("Erro", "Selecione o tipo de usuário.");
+
+    if (!nome || !email || !telefone)
       return Alert.alert("Erro", "Preencha todos os campos obrigatórios.");
 
-    if (selectedRole === "Gestor" && (!cnpj || !empresa)) {
-      return Alert.alert("Erro", "Preencha os campos de CNPJ e nome da empresa.");
-    }
+    if (selectedRole === "Gestor" && (!cnpj || !empresa))
+      return Alert.alert("Erro", "Preencha o CNPJ e o nome da empresa.");
 
     try {
-      await register({
+      // 🔹 Monta o corpo de requisição no formato do backend Java
+      const payload = {
         userType: selectedRole,
         nome,
-        cpf,
         email,
         telefone,
         cnpj: selectedRole === "Gestor" ? cnpj : undefined,
         empresa: selectedRole === "Gestor" ? empresa : undefined,
-      });
+      };
 
-      Alert.alert("Sucesso", "Cadastro realizado com sucesso!");
+      await register(payload);
+
+      Alert.alert("Sucesso", "Usuário cadastrado com sucesso!");
       router.replace("/(auth)/Login");
     } catch (err: any) {
       Alert.alert("Erro", err.message || "Falha ao realizar cadastro.");
@@ -62,49 +61,82 @@ export default function RegisterScreen() {
       source={require("../../assets/agro-image-2.png")}
       style={styles.container}
     >
-      <ScrollView contentContainerStyle={{ flexGrow: 1, justifyContent: "center" }}>
+      <ScrollView contentContainerStyle={styles.scrollContainer}>
         <View style={styles.card}>
-          <Text style={styles.title}>Criar Conta</Text>
+          <Text style={styles.title}>Cadastro de Usuário</Text>
           <Text style={styles.subtitle}>Selecione o tipo de usuário:</Text>
 
           <View style={styles.roleContainer}>
             <TouchableOpacity
-              style={[styles.roleButton, selectedRole === "Produtor" && styles.selectedRole]}
+              style={[
+                styles.roleButton,
+                selectedRole === "Produtor" && styles.selectedRole,
+              ]}
               onPress={() => setSelectedRole("Produtor")}
             >
               <Text
-                style={[styles.roleText, selectedRole === "Produtor" && styles.selectedText]}
+                style={[
+                  styles.roleText,
+                  selectedRole === "Produtor" && styles.selectedText,
+                ]}
               >
                 👨‍🌾 Produtor
               </Text>
-              <Text style={styles.roleDescription}>Gestão da fazenda</Text>
+              <Text style={styles.roleDescription}>
+                Gerencia fazendas e propriedades
+              </Text>
             </TouchableOpacity>
 
             <TouchableOpacity
-              style={[styles.roleButton, selectedRole === "Gestor" && styles.selectedRole]}
+              style={[
+                styles.roleButton,
+                selectedRole === "Gestor" && styles.selectedRole,
+              ]}
               onPress={() => setSelectedRole("Gestor")}
             >
-              <Text style={[styles.roleText, selectedRole === "Gestor" && styles.selectedText]}>
+              <Text
+                style={[
+                  styles.roleText,
+                  selectedRole === "Gestor" && styles.selectedText,
+                ]}
+              >
                 📊 Gestor
               </Text>
-              <Text style={styles.roleDescription}>Relatórios e analytics</Text>
+              <Text style={styles.roleDescription}>
+                Administra empresas e produtores
+              </Text>
             </TouchableOpacity>
           </View>
 
           {selectedRole && (
             <>
-              <InputField placeholder="Nome completo" value={nome} onChangeText={setNome} />
-              <InputField placeholder="CPF" value={cpf} onChangeText={setCpf} />
               <InputField
-                placeholder={selectedRole === "Gestor" ? "E-mail empresarial" : "E-mail"}
+                placeholder="Nome completo"
+                value={nome}
+                onChangeText={setNome}
+              />
+              <InputField
+                placeholder={
+                  selectedRole === "Gestor"
+                    ? "E-mail empresarial"
+                    : "E-mail pessoal"
+                }
                 value={email}
                 onChangeText={setEmail}
               />
-              <InputField placeholder="Telefone" value={telefone} onChangeText={setTelefone} />
+              <InputField
+                placeholder="Telefone"
+                value={telefone}
+                onChangeText={setTelefone}
+              />
 
               {selectedRole === "Gestor" && (
                 <>
-                  <InputField placeholder="CNPJ" value={cnpj} onChangeText={setCnpj} />
+                  <InputField
+                    placeholder="CNPJ da empresa"
+                    value={cnpj}
+                    onChangeText={setCnpj}
+                  />
                   <InputField
                     placeholder="Nome da empresa"
                     value={empresa}
@@ -136,19 +168,40 @@ export default function RegisterScreen() {
 
 const styles = StyleSheet.create({
   container: { flex: 1 },
+  scrollContainer: {
+    flexGrow: 1,
+    justifyContent: "center",
+    alignItems: "center",
+    padding: 20,
+  },
   card: {
     backgroundColor: "rgba(255,255,255,0.95)",
     borderRadius: 20,
     padding: 25,
-    margin: 20,
+    width: "100%",
+    maxWidth: 400,
     shadowColor: "#000",
     shadowOpacity: 0.1,
     shadowRadius: 10,
     elevation: 4,
   },
-  title: { fontSize: 26, fontWeight: "bold", textAlign: "center", color: "#1b5e20" },
-  subtitle: { textAlign: "center", marginVertical: 15, color: "#444", fontSize: 15 },
-  roleContainer: { flexDirection: "row", justifyContent: "space-between", marginBottom: 20 },
+  title: {
+    fontSize: 26,
+    fontWeight: "bold",
+    textAlign: "center",
+    color: "#1b5e20",
+  },
+  subtitle: {
+    textAlign: "center",
+    marginVertical: 15,
+    color: "#444",
+    fontSize: 15,
+  },
+  roleContainer: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    marginBottom: 20,
+  },
   roleButton: {
     flex: 1,
     borderWidth: 1,
