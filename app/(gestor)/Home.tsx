@@ -21,7 +21,7 @@ export default function Home() {
     <ScrollView style={styles.container} showsVerticalScrollIndicator={false}>
       {/* Header */}
       <View style={styles.header}>
-        <Text style={styles.greeting}>Olá, {user?.email?.split("@")[0] || "Gestor"} 👋</Text>
+        <Text style={styles.greeting}>Olá, {user?.userName || "Gestor"} 👋</Text>
         <Text style={styles.subGreeting}>Gerencie suas propriedades com transparência.</Text>
       </View>
 

@@ -1,13 +1,16 @@
-// types/auth.ts
+export interface ContactType {
+  contactTypeId: number;
+  contactTypeName?: string;
+}
+
+export interface UserContact {
+  contactType: ContactType;
+  value: string;
+}
 
 export interface UserType {
   userTypeId: number;
-  userDescription?: string;
-}
-
-export interface Contact {
-  contactType: { contactTypeId: number };
-  value: string;
+  userDescription: "Gestor" | "Produtor";
 }
 
 export interface User {
@@ -15,24 +18,21 @@ export interface User {
   userName: string;
   registrationDate: string;
   userType: UserType;
-  contacts?: Contact[];
-  cnpj?: string | null;
-  empresa?: string | null;
+  contacts?: UserContact[];
 }
 
 export interface RegisterData {
-  userType: "Gestor" | "Produtor";
   nome: string;
   email: string;
   telefone: string;
-  cnpj?: string;
-  empresa?: string;
+  userType: "Gestor" | "Produtor";
 }
 
 export interface AuthContextData {
   user: User | null;
   loading: boolean;
-  login: (email: string) => Promise<User | null>; // 👈 AQUI ESTÁ A MUDANÇA!
+  login: () => Promise<User[]>; // ✅ AGORA RETORNA LISTA
+  setUserFromLogin: (userData: User) => Promise<void>;
   register: (data: RegisterData) => Promise<void>;
   logout: () => Promise<void>;
 }

@@ -9,8 +9,8 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const [user, setUser] = useState<User | null>(null);
   const [loading, setLoading] = useState(true);
 
-  // ⚙️ Altere o IP conforme sua rede local (Java rodando na porta 8080)
- const API_URL = "http://192.168.15.19:8080";
+  // ⚠️ Atualize este IP conforme o da sua máquina
+  const API_URL = "http://10.0.2.2:8080";
 
 
   useEffect(() => {
@@ -26,67 +26,53 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     }
     loadUserData();
   }, []);
+  // 🔹 LOGIN — agora sem parâmetros, apenas busca todos os usuários
+  async function login(): Promise<User[]> {
+    try {
+      const response = await fetch(`${API_URL}/users`);
+      if (!response.ok) throw new Error("Erro ao buscar usuários.");
 
-  // 🔹 LOGIN — agora apenas com e-mail
-  async function login(email: string): Promise<User | null> {
-  try {
-    if (!email.trim()) {
-      Alert.alert("Erro", "Informe o e-mail para login.");
-      return null;
+      const allUsers: User[] = await response.json();
+      console.log("=== USUÁRIOS RECEBIDOS ===");
+      console.log(JSON.stringify(allUsers, null, 2));
+
+      return allUsers;
+    } catch (error) {
+      console.log("Erro no login:", error);
+      Alert.alert("Erro", "Falha ao realizar login.");
+      return [];
     }
-
-    const response = await fetch(`${API_URL}/users`);
-    if (!response.ok) throw new Error("Erro ao buscar usuários.");
-
-    const allUsers: User[] = await response.json();
-
-    console.log("=== USUÁRIOS RECEBIDOS ===");
-    console.log(JSON.stringify(allUsers, null, 2));
-
-    // 🔍 busca por qualquer contato que contenha o e-mail informado
-    const foundUser = allUsers.find((u) =>
-      u.contacts?.some((c) =>
-        c.value?.toLowerCase().trim() === email.toLowerCase().trim()
-      )
-    );
-
-    if (!foundUser) {
-      Alert.alert("Erro", "Usuário não encontrado!");
-      return null;
-    }
-
-    await AsyncStorage.setItem("@user", JSON.stringify(foundUser));
-    setUser(foundUser);
-    return foundUser;
-  } catch (error) {
-    console.log("Erro no login:", error);
-    Alert.alert("Erro", "Falha ao realizar login.");
-    return null;
   }
-}
 
-  // 🔹 REGISTRO — envia JSON compatível com o modelo Java
+  // 🔹 SET USER FROM LOGIN - updates user state after successful login
+  async function setUserFromLogin(userData: User) {
+    try {
+      await AsyncStorage.setItem("@user", JSON.stringify(userData));
+      setUser(userData);
+    } catch (error) {
+      console.log("Erro ao salvar usuário:", error);
+    }
+  }
+
+  // 🔹 REGISTRO — envia JSON compatível com backend Java
   async function register(data: RegisterData) {
     try {
-      const { userType, nome, email, telefone, cnpj, empresa } = data;
+      const { nome, email, telefone, userType } = data;
 
       if (!nome || !email || !telefone) {
         Alert.alert("Erro", "Preencha todos os campos obrigatórios.");
         return;
-      }
-
-      // Monta o corpo da requisição conforme o modelo do back-end
-      const newUser = {
+      }      const newUser = {
         userName: nome,
         registrationDate: new Date().toISOString(),
-        userType: { userTypeId: userType === "Gestor" ? 1 : 2 },
+        userType: { 
+          userTypeId: userType === "Gestor" ? 2 : 1,
+          userDescription: userType
+        },
         contacts: [
           { contactType: { contactTypeId: 1 }, value: telefone },
           { contactType: { contactTypeId: 2 }, value: email },
         ],
-        ...(userType === "Gestor" && cnpj && empresa
-          ? { cnpj, empresa }
-          : {}),
       };
 
       const response = await fetch(`${API_URL}/users`, {
@@ -108,7 +94,6 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     }
   }
 
-  // 🔹 LOGOUT
   async function logout() {
     try {
       await AsyncStorage.removeItem("@user");
@@ -118,9 +103,8 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       Alert.alert("Erro", "Falha ao sair da conta.");
     }
   }
-
   return (
-    <AuthContext.Provider value={{ user, loading, login, register, logout }}>
+    <AuthContext.Provider value={{ user, loading, login, setUserFromLogin, register, logout }}>
       {children}
     </AuthContext.Provider>
   );

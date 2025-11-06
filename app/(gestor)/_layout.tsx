@@ -47,7 +47,7 @@ export default function GestorLayout() {
           }}
         />
         <Tabs.Screen
-          name="Profile"
+          name="profile"
           options={{
             title: "Perfil",
             tabBarIcon: ({ color, size }) => (

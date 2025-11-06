@@ -32,7 +32,7 @@ export default function Dashboard() {
     <ScrollView style={styles.container}>
       <Text style={styles.title}>📈 Dashboard de Produção</Text>
       <Text style={styles.subtitle}>
-        Bem-vindo, {user?.email || "Gestor"}! Aqui estão seus indicadores agrícolas.
+        Bem-vindo, {user?.userName || "Gestor"}! Aqui estão seus indicadores agrícolas.
       </Text>
 
       <View style={styles.statsContainer}>

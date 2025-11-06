@@ -37,21 +37,23 @@ export default function RegisterScreen() {
       return Alert.alert("Erro", "Preencha o CNPJ e o nome da empresa.");
 
     try {
-      // 🔹 Monta o corpo de requisição no formato do backend Java
+      // Monta o payload conforme RegisterData (usado pelo context.register)
       const payload = {
         userType: selectedRole,
         nome,
         email,
         telefone,
-        cnpj: selectedRole === "Gestor" ? cnpj : undefined,
-        empresa: selectedRole === "Gestor" ? empresa : undefined,
+        ...(selectedRole === "Gestor" ? { cnpj, empresa } : {}),
       };
+
+      console.log("📦 Enviando payload:", JSON.stringify(payload, null, 2));
 
       await register(payload);
 
       Alert.alert("Sucesso", "Usuário cadastrado com sucesso!");
       router.replace("/(auth)/Login");
     } catch (err: any) {
+      console.error("Erro no registro:", err);
       Alert.alert("Erro", err.message || "Falha ao realizar cadastro.");
     }
   };

@@ -50,7 +50,7 @@ export default function ProdutorLayout() {
           }}
         />
         <Tabs.Screen
-          name="Profile"
+          name="profile"
           options={{
             title: "Perfil",
             tabBarIcon: ({ color, size }) => (

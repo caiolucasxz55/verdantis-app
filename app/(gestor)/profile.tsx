@@ -38,7 +38,7 @@ export default function Profile() {
     );
   }
 
-  const isProdutor = user.role === "Produtor";
+  const isProdutor = user.userType?.userDescription === "Produtor";
   const avatarUri =
     isProdutor
       ? "https://cdn-icons-png.flaticon.com/512/3069/3069172.png"
@@ -48,7 +48,7 @@ export default function Profile() {
     <View style={styles.container}>
       <View style={styles.header}>
         <Image source={{ uri: avatarUri }} style={styles.avatar} />
-        <Text style={styles.name}>{user.email}</Text>
+        <Text style={styles.name}>{user.userName}</Text>
         <Text style={styles.role}>
           {isProdutor
             ? "Produtor - Gestão da fazenda"

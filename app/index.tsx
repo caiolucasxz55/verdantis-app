@@ -6,16 +6,15 @@ import { AuthContext } from "../context/AuthContext";
 export default function Index() {
   const { user, loading } = useContext(AuthContext);
   const router = useRouter();
-
   useEffect(() => {
    
     if (!loading) {
       if (!user) {
         
         router.replace("/(auth)/Login");
-      } else if (user.role === "Gestor") {
+      } else if (user.userType?.userDescription === "Gestor") {
         router.replace("/(gestor)/Home");
-      } else if (user.role === "Produtor") {
+      } else if (user.userType?.userDescription === "Produtor") {
         router.replace("/(produtor)/Home");
       }
     }

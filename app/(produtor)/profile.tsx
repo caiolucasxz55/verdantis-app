@@ -38,7 +38,7 @@ const Profile: React.FC = () => {
     );
   }
 
-  const isProdutor = user.role === "Produtor";
+  const isProdutor = user.userType?.userDescription === "Produtor";
   const avatarUri = "https://cdn-icons-png.flaticon.com/512/3069/3069172.png";
 
   return (
@@ -46,7 +46,7 @@ const Profile: React.FC = () => {
       {/* Cabeçalho */}
       <View style={styles.header}>
         <Image source={{ uri: avatarUri }} style={styles.avatar} />
-        <Text style={styles.name}>{user.email}</Text>
+        <Text style={styles.name}>{user.userName}</Text>
         <Text style={styles.role}>
           {isProdutor ? "Produtor - Gestão da fazenda" : "Gestor - Relatórios e analytics"}
         </Text>
