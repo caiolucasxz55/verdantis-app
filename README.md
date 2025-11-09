@@ -1,3 +1,14 @@
+Para fazer a funcionalidade do app perfeitamente clone o projeto java numa pasta vazia
+git clone https://github.com/caiolucasxz55/VitsAPI.git
+
+depois clique em vitsAgrochainAplication e rode o programa
+
+nisso starte o app e navegue pelas novas funcionalidades.
+
+caso nao consiga dar npm install por causa de dependencias ( do prorio react-native)
+rode: npm install --legacy-peer-deps
+
+
 # Verdantis Mobile App 📱🌾
 
 <div align="center">
