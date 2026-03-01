@@ -10,6 +10,7 @@ import {
 } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import { useRouter } from "expo-router";
+import { theme } from "../../components/generic/theme";
 
 export default function HomeProdutor() {
   const router = useRouter();
@@ -30,8 +31,23 @@ export default function HomeProdutor() {
     <ScrollView style={styles.container} showsVerticalScrollIndicator={false}>
       {/* Header */}
       <View style={styles.header}>
-        <Text style={styles.greeting}>Olá, Produtor 👋</Text>
-        <Text style={styles.subGreeting}>Veja suas propriedades e cultivos em um só lugar.</Text>
+        <Text style={styles.greeting}>Ola, Produtor</Text>
+        <Text style={styles.subGreeting}>Veja suas propriedades e cultivos em um so lugar.</Text>
+      </View>
+
+      <View style={styles.kpiRow}>
+        <View style={styles.kpiCard}>
+          <Text style={styles.kpiLabel}>Lotes ativos</Text>
+          <Text style={styles.kpiValue}>12</Text>
+        </View>
+        <View style={styles.kpiCard}>
+          <Text style={styles.kpiLabel}>Propriedades</Text>
+          <Text style={styles.kpiValue}>5</Text>
+        </View>
+        <View style={styles.kpiCard}>
+          <Text style={styles.kpiLabel}>Saude do solo</Text>
+          <Text style={styles.kpiValue}>87%</Text>
+        </View>
       </View>
 
       {/* Ações principais */}
@@ -63,7 +79,7 @@ export default function HomeProdutor() {
 
       {/* Cultivos ativos */}
       <View style={styles.section}>
-        <Text style={styles.sectionTitle}>🌾 Seus cultivos</Text>
+        <Text style={styles.sectionTitle}>Seus cultivos</Text>
         <FlatList
           data={cultivos}
           keyExtractor={(item) => item.id}
@@ -83,7 +99,7 @@ export default function HomeProdutor() {
 
       {/* Dicas rápidas */}
       <View style={styles.section}>
-        <Text style={styles.sectionTitle}>💡 Dicas para você</Text>
+        <Text style={styles.sectionTitle}>Dicas para voce</Text>
         {dicas.map((item) => (
           <View key={item.id} style={styles.tipCard}>
             <Ionicons name={item.icon as any} size={26} color="#2e7d32" style={{ marginRight: 12 }} />
@@ -93,25 +109,6 @@ export default function HomeProdutor() {
             </View>
           </View>
         ))}
-      </View>
-
-      {/* Resumo rápido */}
-      <View style={styles.summarySection}>
-        <Text style={styles.sectionTitle}>📊 Resumo</Text>
-        <View style={styles.summaryRow}>
-          <View style={styles.summaryCard}>
-            <Text style={styles.summaryNumber}>5</Text>
-            <Text style={styles.summaryLabel}>Propriedades</Text>
-          </View>
-          <View style={styles.summaryCard}>
-            <Text style={styles.summaryNumber}>12</Text>
-            <Text style={styles.summaryLabel}>Lotes ativos</Text>
-          </View>
-          <View style={styles.summaryCard}>
-            <Text style={styles.summaryNumber}>87%</Text>
-            <Text style={styles.summaryLabel}>Saúde do solo</Text>
-          </View>
-        </View>
       </View>
 
       {/* Botão Dashboard */}
@@ -130,23 +127,46 @@ export default function HomeProdutor() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: "#f9fafb",
+    backgroundColor: "#f8fafc",
     paddingHorizontal: 20,
     paddingTop: 60,
   },
 
   header: {
-    marginBottom: 28,
+    marginBottom: 20,
   },
   greeting: {
     fontSize: 26,
-    fontWeight: "700",
-    color: "#1b5e20",
+    fontWeight: "800",
+    color: theme.colors.textPrimary,
   },
   subGreeting: {
-    fontSize: 15,
-    color: "#666",
+    fontSize: 14,
+    color: theme.colors.textMuted,
     marginTop: 4,
+  },
+
+  kpiRow: {
+    flexDirection: "row",
+    gap: 10,
+    marginBottom: 22,
+  },
+  kpiCard: {
+    flex: 1,
+    backgroundColor: "#fff",
+    borderRadius: theme.radius.lg,
+    padding: 14,
+    ...theme.shadow.soft,
+  },
+  kpiLabel: {
+    fontSize: 12,
+    color: theme.colors.textMuted,
+    marginBottom: 6,
+  },
+  kpiValue: {
+    fontSize: 16,
+    fontWeight: "700",
+    color: theme.colors.textPrimary,
   },
 
   actionsRow: {
@@ -160,15 +180,12 @@ const styles = StyleSheet.create({
     borderRadius: 14,
     paddingVertical: 16,
     marginHorizontal: 6,
-    shadowColor: "#000",
-    shadowOpacity: 0.05,
-    shadowRadius: 5,
-    elevation: 2,
+    ...theme.shadow.soft,
   },
   actionText: {
     fontSize: 13,
     fontWeight: "600",
-    color: "#1b5e20",
+    color: theme.colors.textPrimary,
     marginTop: 6,
   },
 
@@ -178,21 +195,18 @@ const styles = StyleSheet.create({
   sectionTitle: {
     fontSize: 18,
     fontWeight: "700",
-    color: "#1b5e20",
+    color: theme.colors.textPrimary,
     marginBottom: 12,
   },
 
   cropCard: {
     width: 160,
     height: 160,
-    borderRadius: 16,
+    borderRadius: theme.radius.lg,
     overflow: "hidden",
     marginRight: 16,
     backgroundColor: "#eaf4ec",
-    elevation: 3,
-    shadowColor: "#000",
-    shadowOpacity: 0.05,
-    shadowRadius: 3,
+    ...theme.shadow.soft,
   },
   cropImg: {
     width: "100%",
@@ -220,42 +234,24 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     alignItems: "center",
     backgroundColor: "#fff",
-    borderRadius: 14,
+    borderRadius: theme.radius.lg,
     padding: 14,
     marginBottom: 10,
-    elevation: 1,
+    ...theme.shadow.soft,
   },
-  tipTitle: { fontSize: 15, fontWeight: "600", color: "#2e7d32" },
-  tipDesc: { fontSize: 13, color: "#555", marginTop: 3 },
-
-  summarySection: {
-    marginBottom: 30,
-  },
-  summaryRow: {
-    flexDirection: "row",
-    justifyContent: "space-between",
-  },
-  summaryCard: {
-    flex: 1,
-    alignItems: "center",
-    backgroundColor: "#fff",
-    borderRadius: 14,
-    paddingVertical: 18,
-    marginHorizontal: 4,
-    elevation: 2,
-  },
-  summaryNumber: { fontSize: 18, fontWeight: "700", color: "#2e7d32" },
-  summaryLabel: { fontSize: 13, color: "#555", marginTop: 4 },
+  tipTitle: { fontSize: 15, fontWeight: "700", color: theme.colors.textPrimary },
+  tipDesc: { fontSize: 13, color: theme.colors.textMuted, marginTop: 3 },
 
   dashboardButton: {
-    backgroundColor: "#1b5e20",
+    backgroundColor: theme.colors.primary,
     flexDirection: "row",
     alignItems: "center",
     justifyContent: "center",
     padding: 16,
-    borderRadius: 12,
+    borderRadius: theme.radius.md,
     marginTop: 5,
     marginBottom: 50,
+    ...theme.shadow.soft,
   },
   dashboardText: { color: "#fff", fontWeight: "bold", marginLeft: 8 },
 });

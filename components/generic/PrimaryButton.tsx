@@ -1,6 +1,7 @@
 import React from "react";
 import { TouchableOpacity, Text, StyleSheet } from "react-native";
 import { PrimaryButtonProps } from "../../types/fields";
+import { theme } from "./theme";
 
 
 export default function PrimaryButton({ label, onPress, style }: PrimaryButtonProps) {
@@ -13,18 +14,18 @@ export default function PrimaryButton({ label, onPress, style }: PrimaryButtonPr
 
 const styles = StyleSheet.create({
   button: {
-    backgroundColor: "#32CD32",
-    paddingVertical: 12,
-    paddingHorizontal: 32,
-    borderRadius: 8,
+    backgroundColor: theme.colors.primary,
+    paddingVertical: 14,
+    paddingHorizontal: 28,
+    borderRadius: theme.radius.md,
     alignItems: "center",
     justifyContent: "center",
     marginTop: 16,
-    elevation: 3,
+    ...theme.shadow.soft,
   },
   text: {
     color: "#fff",
     fontSize: 16,
-    fontWeight: "bold",
+    fontWeight: "700",
   },
 });

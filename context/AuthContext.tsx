@@ -1,111 +1,86 @@
-import React, { createContext, useState, useEffect } from "react";
+
+import React, { createContext, useEffect, useState } from "react";
 import AsyncStorage from "@react-native-async-storage/async-storage";
-import { Alert } from "react-native";
-import { User, AuthContextData, RegisterData } from "../types/auth";
+import { useRouter } from "expo-router";
+import type { AuthContextData, LoginData, RegisterData, User } from "../types/auth";
 
-export const AuthContext = createContext<AuthContextData>({} as AuthContextData);
+export const AuthContext = createContext<AuthContextData>({
+	user: null,
+	loading: false,
+	login: async () => false,
+	register: async () => false,
+	logout: async () => {},
+});
 
-export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
-  const [user, setUser] = useState<User | null>(null);
-  const [loading, setLoading] = useState(true);
+export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
+	const router = useRouter();
+	const [user, setUser] = useState<User | null>(null);
+	const [loading, setLoading] = useState(true);
 
-  // ⚠️ Atualize este IP conforme o da sua máquina
-  const API_URL = "http://10.0.2.2:8080";
+	useEffect(() => {
+		const loadStoredUser = async () => {
+			const storedUser = await AsyncStorage.getItem("user");
+			if (storedUser) {
+				setUser(JSON.parse(storedUser));
+			}
+			setLoading(false);
+		};
 
+		loadStoredUser();
+	}, []);
 
-  useEffect(() => {
-    async function loadUserData() {
-      try {
-        const storedUser = await AsyncStorage.getItem("@user");
-        if (storedUser) setUser(JSON.parse(storedUser));
-      } catch (error) {
-        console.log("Erro ao carregar dados do usuário:", error);
-      } finally {
-        setLoading(false);
-      }
-    }
-    loadUserData();
-  }, []);
-  // 🔹 LOGIN — agora sem parâmetros, apenas busca todos os usuários
-  async function login(): Promise<User[]> {
-    try {
-      const response = await fetch(`${API_URL}/users`);
-      if (!response.ok) throw new Error("Erro ao buscar usuários.");
+	const login = async (data: LoginData): Promise<boolean> => {
+		try {
+			if (!data.email || !data.password) return false;
 
-      const allUsers: User[] = await response.json();
-      console.log("=== USUÁRIOS RECEBIDOS ===");
-      console.log(JSON.stringify(allUsers, null, 2));
+			const farmer: User = {
+				id: "farmer-1",
+				name: data.email.split("@")[0] || "Produtor",
+				email: data.email,
+				registrationDate: new Date().toISOString(),
+			};
 
-      return allUsers;
-    } catch (error) {
-      console.log("Erro no login:", error);
-      Alert.alert("Erro", "Falha ao realizar login.");
-      return [];
-    }
-  }
+			await AsyncStorage.setItem("user", JSON.stringify(farmer));
+			setUser(farmer);
+			router.replace("/(tabs)/dashboard");
+			return true;
+		} catch (error) {
+			console.log("Login error:", error);
+			return false;
+		}
+	};
 
-  // 🔹 SET USER FROM LOGIN - updates user state after successful login
-  async function setUserFromLogin(userData: User) {
-    try {
-      await AsyncStorage.setItem("@user", JSON.stringify(userData));
-      setUser(userData);
-    } catch (error) {
-      console.log("Erro ao salvar usuário:", error);
-    }
-  }
+	const register = async (data: RegisterData): Promise<boolean> => {
+		try {
+			if (!data.name || !data.email || !data.password) return false;
 
-  // 🔹 REGISTRO — envia JSON compatível com backend Java
-  async function register(data: RegisterData) {
-    try {
-      const { nome, email, telefone, userType } = data;
+			const farmer: User = {
+				id: "farmer-1",
+				name: data.name,
+				email: data.email,
+				registrationDate: new Date().toISOString(),
+			};
 
-      if (!nome || !email || !telefone) {
-        Alert.alert("Erro", "Preencha todos os campos obrigatórios.");
-        return;
-      }      const newUser = {
-        userName: nome,
-        registrationDate: new Date().toISOString(),
-        userType: { 
-          userTypeId: userType === "Gestor" ? 2 : 1,
-          userDescription: userType
-        },
-        contacts: [
-          { contactType: { contactTypeId: 1 }, value: telefone },
-          { contactType: { contactTypeId: 2 }, value: email },
-        ],
-      };
+			await AsyncStorage.setItem("user", JSON.stringify(farmer));
+			setUser(farmer);
+			router.replace("/(tabs)/dashboard");
+			return true;
+		} catch (error) {
+			console.log("Register error:", error);
+			return false;
+		}
+	};
 
-      const response = await fetch(`${API_URL}/users`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(newUser),
-      });
+	const logout = async () => {
+		await AsyncStorage.removeItem("user");
+		setUser(null);
+		router.replace("/(auth)/Login");
+	};
 
-      if (!response.ok) throw new Error("Falha ao cadastrar usuário.");
-
-      const createdUser: User = await response.json();
-      await AsyncStorage.setItem("@user", JSON.stringify(createdUser));
-      setUser(createdUser);
-
-      Alert.alert("Sucesso", "Usuário cadastrado com sucesso!");
-    } catch (error) {
-      console.log("Erro no registro:", error);
-      Alert.alert("Erro", "Falha ao cadastrar usuário.");
-    }
-  }
-
-  async function logout() {
-    try {
-      await AsyncStorage.removeItem("@user");
-      setUser(null);
-    } catch (error) {
-      console.log("Erro ao sair:", error);
-      Alert.alert("Erro", "Falha ao sair da conta.");
-    }
-  }
-  return (
-    <AuthContext.Provider value={{ user, loading, login, setUserFromLogin, register, logout }}>
-      {children}
-    </AuthContext.Provider>
-  );
+	return (
+		<AuthContext.Provider value={{ user, loading, login, register, logout }}>
+			{children}
+		</AuthContext.Provider>
+	);
 };
+//   // =======================================

@@ -2,6 +2,7 @@ import React from "react";
 import { Text, StyleSheet, TouchableOpacity } from "react-native";
 import { useRouter } from "expo-router";
 import { LinkTextProps } from "../../types/fields";
+import { theme } from "./theme";
 
 
 export default function LinkText({ text, highlight, href, onPress }: LinkTextProps) {
@@ -22,6 +23,6 @@ export default function LinkText({ text, highlight, href, onPress }: LinkTextPro
 }
 
 const styles = StyleSheet.create({
-  text: { fontSize: 14, color: "#ccc", textAlign: "center" },
-  highlight: { color: "#4ade80", fontWeight: "bold" },
+  text: { fontSize: 14, color: theme.colors.textMuted, textAlign: "center" },
+  highlight: { color: theme.colors.primary, fontWeight: "700" },
 });

@@ -1,5 +1,6 @@
 import React from "react";
 import { View, Text, Image, StyleSheet } from "react-native";
+import { theme } from "./theme";
 
 export default function LogoHeader() {
   return (
@@ -9,13 +10,15 @@ export default function LogoHeader() {
         style={styles.logo}
         resizeMode="contain"
       />
-      <Text style={styles.title}>Bem-vindo ao Verdantis</Text>
+      <Text style={styles.title}>Verdantis</Text>
+      <Text style={styles.subtitle}>Gestao agricola inteligente</Text>
     </View>
   );
 }
 
 const styles = StyleSheet.create({
-  container: { alignItems: "center", justifyContent: "center", marginVertical: 32 },
-  logo: { width: 120, height: 120, marginBottom: 16 },
-  title: { fontSize: 22, fontWeight: "bold", color: "#fff" },
+  container: { alignItems: "center", justifyContent: "center", marginBottom: 24 },
+  logo: { width: 96, height: 96, marginBottom: 12 },
+  title: { fontSize: 26, fontWeight: "800", color: theme.colors.textLight },
+  subtitle: { marginTop: 6, fontSize: 14, color: "rgba(248, 250, 252, 0.8)" },
 });

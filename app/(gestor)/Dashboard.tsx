@@ -3,6 +3,7 @@ import React, { useContext } from "react";
 import { View, Text, StyleSheet, ScrollView, Dimensions } from "react-native";
 import { BarChart, LineChart } from "react-native-chart-kit";
 import { useAuth } from "../../hooks/useAuth";
+import { theme } from "../../components/generic/theme";
 
 export default function Dashboard() {
   const { user } = useAuth();
@@ -89,37 +90,37 @@ export default function Dashboard() {
 }
 
 const chartConfig = {
-  backgroundGradientFrom: "#e8f5e9",
-  backgroundGradientTo: "#c8e6c9",
+  backgroundGradientFrom: "#f0fdf4",
+  backgroundGradientTo: "#dcfce7",
   decimalPlaces: 0,
-  color: (opacity = 1) => `rgba(46, 125, 50, ${opacity})`,
-  labelColor: (opacity = 1) => `rgba(0, 0, 0, ${opacity})`,
+  color: (opacity = 1) => `rgba(34, 197, 94, ${opacity})`,
+  labelColor: (opacity = 1) => `rgba(30, 41, 59, ${opacity})`,
 };
 
 const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: "#f5fcf5", padding: 20 },
-  title: { fontSize: 22, fontWeight: "bold", color: "#1b5e20", marginTop: 10 },
-  subtitle: { fontSize: 15, color: "#555", marginBottom: 20 },
+  container: { flex: 1, backgroundColor: "#f8fafc", padding: 20 },
+  title: { fontSize: 22, fontWeight: "800", color: theme.colors.textPrimary, marginTop: 10 },
+  subtitle: { fontSize: 14, color: theme.colors.textMuted, marginBottom: 20 },
   statsContainer: { flexDirection: "row", justifyContent: "space-between", flexWrap: "wrap" },
   statCard: {
     width: "31%",
     backgroundColor: "#fff",
     padding: 15,
-    borderRadius: 12,
-    elevation: 3,
+    borderRadius: theme.radius.lg,
     alignItems: "center",
+    ...theme.shadow.soft,
   },
-  statLabel: { color: "#555", fontSize: 13 },
-  statValue: { color: "#1b5e20", fontWeight: "bold", fontSize: 16, marginTop: 4 },
+  statLabel: { color: theme.colors.textMuted, fontSize: 12 },
+  statValue: { color: theme.colors.textPrimary, fontWeight: "700", fontSize: 16, marginTop: 4 },
   chartCard: {
     backgroundColor: "#fff",
-    borderRadius: 12,
+    borderRadius: theme.radius.lg,
     padding: 15,
-    elevation: 2,
     marginTop: 25,
     alignItems: "center",
+    ...theme.shadow.soft,
   },
-  chartTitle: { fontWeight: "bold", fontSize: 16, color: "#333", marginBottom: 10 },
-  chart: { borderRadius: 12 },
-  footer: { textAlign: "center", color: "#777", fontSize: 12, marginVertical: 15 },
+  chartTitle: { fontWeight: "700", fontSize: 16, color: theme.colors.textPrimary, marginBottom: 10 },
+  chart: { borderRadius: theme.radius.md },
+  footer: { textAlign: "center", color: theme.colors.textMuted, fontSize: 12, marginVertical: 15 },
 });

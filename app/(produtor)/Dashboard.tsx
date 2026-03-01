@@ -2,6 +2,7 @@ import React from "react";
 import { View, Text, StyleSheet, ScrollView, useWindowDimensions } from "react-native";
 import { LineChart, BarChart } from "react-native-chart-kit";
 import { Ionicons } from "@expo/vector-icons";
+import { theme } from "../../components/generic/theme";
 
 const Dashboard: React.FC = () => {
   const { width } = useWindowDimensions(); 
@@ -99,26 +100,23 @@ const Dashboard: React.FC = () => {
 export default Dashboard;
 
 const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: "#F8FBF8", paddingHorizontal: 20, paddingTop: 60 },
-  title: { fontSize: 26, fontWeight: "700", color: "#1D6B3A", marginBottom: 20, textAlign: "center" },
+  container: { flex: 1, backgroundColor: "#f8fafc", paddingHorizontal: 20, paddingTop: 60 },
+  title: { fontSize: 26, fontWeight: "800", color: theme.colors.textPrimary, marginBottom: 20, textAlign: "center" },
   card: {
     backgroundColor: "#FFFFFF",
-    borderRadius: 16,
+    borderRadius: theme.radius.lg,
     paddingVertical: 16,
     paddingHorizontal: 20,
     marginBottom: 20,
-    shadowColor: "#000",
-    shadowOpacity: 0.08,
-    shadowRadius: 6,
-    elevation: 4,
+    ...theme.shadow.soft,
   },
   cardHeader: { flexDirection: "row", alignItems: "center", marginBottom: 12 },
-  cardTitle: { fontSize: 18, fontWeight: "600", marginLeft: 8, color: "#1D6B3A" },
-  value: { fontSize: 24, fontWeight: "700", color: "#2E7D32" },
-  subtitle: { fontSize: 14, color: "#557C68", marginTop: 4 },
+  cardTitle: { fontSize: 18, fontWeight: "700", marginLeft: 8, color: theme.colors.textPrimary },
+  value: { fontSize: 24, fontWeight: "800", color: theme.colors.primaryDark },
+  subtitle: { fontSize: 14, color: theme.colors.textMuted, marginTop: 4 },
   progressCard: { alignItems: "center" },
-  progressTitle: { fontSize: 18, fontWeight: "600", color: "#1D6B3A", marginBottom: 10 },
+  progressTitle: { fontSize: 18, fontWeight: "700", color: theme.colors.textPrimary, marginBottom: 10 },
   progressBar: { width: "100%", height: 12, backgroundColor: "#E0E0E0", borderRadius: 6, overflow: "hidden" },
-  progressFill: { height: "100%", backgroundColor: "#58A55C" },
-  progressText: { marginTop: 8, fontSize: 14, color: "#2E7D32", fontWeight: "500" },
+  progressFill: { height: "100%", backgroundColor: theme.colors.primary },
+  progressText: { marginTop: 8, fontSize: 14, color: theme.colors.primaryDark, fontWeight: "600" },
 });

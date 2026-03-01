@@ -3,6 +3,7 @@ import { View, Text, StyleSheet, FlatList, TouchableOpacity, ScrollView } from "
 import { Ionicons } from "@expo/vector-icons";
 import { useRouter } from "expo-router";
 import { useAuth } from "../../hooks/useAuth";
+import { theme } from "../../components/generic/theme";
 
 export default function Home() {
   const { user } = useAuth();
@@ -17,19 +18,37 @@ export default function Home() {
 
   const ranking = [...fazendas].sort((a, b) => b.producao - a.producao);
 
+  const total = fazendas.reduce((acc, f) => acc + f.producao, 0);
+  const media = Math.round(total / fazendas.length);
+  const melhor = ranking[0];
+
   return (
     <ScrollView style={styles.container} showsVerticalScrollIndicator={false}>
-      {/* Header */}
       <View style={styles.header}>
-        <Text style={styles.greeting}>Olá, {user?.userName || "Gestor"} 👋</Text>
-        <Text style={styles.subGreeting}>Gerencie suas propriedades com transparência.</Text>
+        <Text style={styles.greeting}>Olá, {user?.userName || "Gestor"}</Text>
+        <Text style={styles.subGreeting}>Gerencie suas propriedades com transparencia.</Text>
+      </View>
+
+      <View style={styles.kpiRow}>
+        <View style={styles.kpiCard}>
+          <Text style={styles.kpiLabel}>Producao total</Text>
+          <Text style={styles.kpiValue}>{total} ton</Text>
+        </View>
+        <View style={styles.kpiCard}>
+          <Text style={styles.kpiLabel}>Media</Text>
+          <Text style={styles.kpiValue}>{media} ton</Text>
+        </View>
+        <View style={styles.kpiCard}>
+          <Text style={styles.kpiLabel}>Destaque</Text>
+          <Text style={styles.kpiValue}>{melhor.nome}</Text>
+        </View>
       </View>
 
       {/* Ações principais */}
       <View style={styles.actionsRow}>
         <TouchableOpacity
           style={[styles.actionButton, { backgroundColor: "#e8f5e9" }]}
-          onPress={() => router.push("/(gestor)/funcionalidades/FeedAtividades")}
+          onPress={() => router.push("/(gestor)/(funcionalidades)/FeedAtividades")}
         >
           <Ionicons name="newspaper-outline" size={28} color="#1b5e20" />
           <Text style={styles.actionText}>Atividades</Text>
@@ -37,7 +56,7 @@ export default function Home() {
 
         <TouchableOpacity
           style={[styles.actionButton, { backgroundColor: "#f1f8e9" }]}
-          onPress={() => router.push("/(gestor)/funcionalidades/Observacao")}
+          onPress={() => router.push("/(gestor)/(funcionalidades)/Observacao")}
         >
           <Ionicons name="business-outline" size={28} color="#2e7d32" />
           <Text style={styles.actionText}>Fazendas</Text>
@@ -45,7 +64,7 @@ export default function Home() {
 
         <TouchableOpacity
           style={[styles.actionButton, { backgroundColor: "#e0f2f1" }]}
-          onPress={() => router.push("/(gestor)/funcionalidades/ScannerQR")}
+          onPress={() => router.push("/(gestor)/(funcionalidades)/ScannerQR")}
         >
           <Ionicons name="qr-code-outline" size={28} color="#388e3c" />
           <Text style={styles.actionText}>Scanner</Text>
@@ -73,7 +92,7 @@ export default function Home() {
 
       {/* Ranking */}
       <View style={styles.section}>
-        <Text style={styles.sectionTitle}>🏆 Ranking de Produção</Text>
+        <Text style={styles.sectionTitle}>Ranking de Producao</Text>
         {ranking.map((item, index) => (
           <View key={item.id} style={styles.rankingItem}>
             <View style={styles.rankLeft}>
@@ -103,22 +122,44 @@ export default function Home() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: "#f9fafb",
+    backgroundColor: "#f8fafc",
     paddingHorizontal: 20,
     paddingTop: 60,
   },
   header: {
-    marginBottom: 24,
+    marginBottom: 20,
   },
   greeting: {
     fontSize: 26,
-    fontWeight: "700",
-    color: "#1b5e20",
+    fontWeight: "800",
+    color: theme.colors.textPrimary,
   },
   subGreeting: {
-    fontSize: 15,
-    color: "#666",
+    fontSize: 14,
+    color: theme.colors.textMuted,
     marginTop: 4,
+  },
+  kpiRow: {
+    flexDirection: "row",
+    gap: 10,
+    marginBottom: 22,
+  },
+  kpiCard: {
+    flex: 1,
+    backgroundColor: "#fff",
+    borderRadius: theme.radius.lg,
+    padding: 14,
+    ...theme.shadow.soft,
+  },
+  kpiLabel: {
+    fontSize: 12,
+    color: theme.colors.textMuted,
+    marginBottom: 6,
+  },
+  kpiValue: {
+    fontSize: 16,
+    fontWeight: "700",
+    color: theme.colors.textPrimary,
   },
   actionsRow: {
     flexDirection: "row",
@@ -131,15 +172,12 @@ const styles = StyleSheet.create({
     borderRadius: 14,
     paddingVertical: 16,
     marginHorizontal: 6,
-    shadowColor: "#000",
-    shadowOpacity: 0.05,
-    shadowRadius: 5,
-    elevation: 2,
+    ...theme.shadow.soft,
   },
   actionText: {
     fontSize: 13,
     fontWeight: "600",
-    color: "#1b5e20",
+    color: theme.colors.textPrimary,
     marginTop: 6,
   },
   section: {
@@ -148,49 +186,47 @@ const styles = StyleSheet.create({
   sectionTitle: {
     fontSize: 18,
     fontWeight: "700",
-    color: "#1b5e20",
+    color: theme.colors.textPrimary,
     marginBottom: 10,
   },
   card: {
     flexDirection: "row",
     justifyContent: "space-between",
     backgroundColor: "#fff",
-    borderRadius: 14,
+    borderRadius: theme.radius.lg,
     padding: 16,
     marginVertical: 6,
-    shadowColor: "#000",
-    shadowOpacity: 0.04,
-    shadowRadius: 6,
-    elevation: 2,
+    ...theme.shadow.soft,
   },
-  fazendaNome: { fontWeight: "bold", fontSize: 16, color: "#333" },
-  fazendaCultura: { color: "#777", marginTop: 3 },
-  producaoText: { fontWeight: "bold", color: "#2e7d32" },
+  fazendaNome: { fontWeight: "700", fontSize: 16, color: theme.colors.textPrimary },
+  fazendaCultura: { color: theme.colors.textMuted, marginTop: 3 },
+  producaoText: { fontWeight: "700", color: theme.colors.primaryDark },
   rankingItem: {
     flexDirection: "row",
     justifyContent: "space-between",
     backgroundColor: "#fff",
-    borderRadius: 12,
+    borderRadius: theme.radius.md,
     padding: 12,
     marginVertical: 5,
-    elevation: 1,
+    ...theme.shadow.soft,
   },
   rankLeft: {
     flexDirection: "row",
     alignItems: "center",
   },
   rankingPos: { fontSize: 16, fontWeight: "bold", marginRight: 8 },
-  rankingName: { fontSize: 15, fontWeight: "600", color: "#333" },
-  rankingValue: { fontWeight: "700", color: "#2e7d32" },
+  rankingName: { fontSize: 15, fontWeight: "600", color: theme.colors.textPrimary },
+  rankingValue: { fontWeight: "700", color: theme.colors.primaryDark },
   dashboardButton: {
-    backgroundColor: "#1b5e20",
+    backgroundColor: theme.colors.primary,
     flexDirection: "row",
     alignItems: "center",
     justifyContent: "center",
     padding: 16,
-    borderRadius: 12,
+    borderRadius: theme.radius.md,
     marginTop: 15,
     marginBottom: 40,
+    ...theme.shadow.soft,
   },
   dashboardText: { color: "#fff", fontWeight: "bold", marginLeft: 8 },
 });

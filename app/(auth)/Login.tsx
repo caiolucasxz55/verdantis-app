@@ -7,6 +7,7 @@ import {
   Text,
   TouchableOpacity,
   TextInput,
+  ScrollView,
 } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import { useRouter } from "expo-router";
@@ -14,85 +15,48 @@ import LogoHeader from "../../components/generic/LogoHeader";
 import PrimaryButton from "../../components/generic/PrimaryButton";
 import LinkText from "../../components/generic/LinkText";
 import { useAuth } from "../../hooks/useAuth";
-import { User } from "../../types/auth";
+import { theme } from "../../components/generic/theme";
 
 export default function LoginScreen() {
-  const { login, setUserFromLogin } = useAuth();
+  const { login } = useAuth();
   const router = useRouter();
 
-  const [userName, setUserName] = useState("");
-  const [selectedRole, setSelectedRole] = useState<"Gestor" | "Produtor" | null>(null);
-  const [availableUsers, setAvailableUsers] = useState<User[]>([]);
-  const [showRoleSelection, setShowRoleSelection] = useState(false);
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+
+  const features = [
+    {
+      icon: "trending-up-outline",
+      title: "Lucratividade em tempo real",
+      desc: "Acompanhe lucro, receita e custos por lote",
+    },
+    {
+      icon: "bar-chart-outline",
+      title: "Analytics de performance",
+      desc: "Graficos comparativos para decisoes rapidas",
+    },
+    {
+      icon: "shield-checkmark-outline",
+      title: "Rastreabilidade completa",
+      desc: "Hash de verificacao e timeline de eventos",
+    },
+  ];
 
   const handleLogin = async () => {
     try {
-      if (!userName) {
-        Alert.alert("Erro", "Informe seu nome de usuário.");
+      if (!email || !password) {
+        Alert.alert("Erro", "Informe email e senha.");
         return;
       }
 
-      if (!showRoleSelection) {
-        // First step: Get users by name
-        const users: User[] = await login();
-
-        if (!users || users.length === 0) {
-          Alert.alert("Erro", "Nenhum usuário encontrado no servidor!");
-          return;
-        }
-
-        const matchedUsers = users.filter(
-          (u: User) => u.userName?.toLowerCase().trim() === userName.toLowerCase().trim()
-        );
-
-        if (matchedUsers.length === 0) {
-          Alert.alert("Erro", "Usuário não encontrado.");
-          return;
-        }
-
-        // Show role selection if user found
-        setAvailableUsers(matchedUsers);
-        setShowRoleSelection(true);
-        return;
-      }
-
-      // Second step: Login with selected role
-      if (!selectedRole) {
-        Alert.alert("Erro", "Selecione seu tipo de usuário.");
-        return;
-      }
-
-      const matchedUser = availableUsers.find(
-        (u: User) => u.userType?.userDescription === selectedRole
-      );
-
-      if (!matchedUser) {
-        Alert.alert("Erro", `Usuário não encontrado com o perfil ${selectedRole}.`);
-        return;
-      }
-
-      // Save user to context and AsyncStorage
-      await setUserFromLogin(matchedUser);
-      
-      const role = matchedUser.userType?.userDescription;
-
-      if (role === "Gestor") {
-        router.replace("/(gestor)/Home");
-      } else if (role === "Produtor") {
-        router.replace("/(produtor)/Home");
-      } else {
-        Alert.alert("Aviso", "Tipo de usuário não reconhecido.");
+      const ok = await login({ email, password });
+      if (!ok) {
+        Alert.alert("Erro", "Falha ao realizar login.");
       }
     } catch (err: any) {
       console.error("Erro no login:", err);
       Alert.alert("Erro", err.message || "Falha ao realizar login.");
     }
-  };
-
-  const resetLogin = () => {
-    setShowRoleSelection(false);
-    setSelectedRole(null);
-    setAvailableUsers([]);
   };
   return (
     <ImageBackground
@@ -100,219 +64,189 @@ export default function LoginScreen() {
       style={styles.container}
     >
       <View style={styles.overlay} />
-      <View style={styles.content}>
-        <LogoHeader />
+      <ScrollView contentContainerStyle={styles.scrollContent} showsVerticalScrollIndicator={false}>
+        <View style={styles.brandSection}>
+          <LogoHeader />
+          <Text style={styles.brandTitle}>
+            Gerencie sua fazenda com <Text style={styles.brandHighlight}>inteligencia</Text>
+          </Text>
+          <Text style={styles.brandSubtitle}>
+            Controle lotes, cultivos, custos e lucratividade em uma plataforma feita para o produtor rural.
+          </Text>
 
-        {!showRoleSelection ? (
-          <>
-            {/* Username Input */}
-            <View style={styles.inputWrapper}>
-              <Ionicons name="person-outline" size={20} color="#4ade80" style={styles.icon} />
-              <TextInput
-                style={styles.loginInput}
-                placeholder="Nome de usuário"
-                placeholderTextColor="#888"
-                value={userName}
-                onChangeText={setUserName}
-                autoCapitalize="none"
-              />
-            </View>
-
-            <PrimaryButton
-              label="Continuar"
-              onPress={handleLogin}
-              style={{ marginTop: 25, width: "100%" }}
-            />
-          </>
-        ) : (
-          <>
-            {/* Role Selection */}
-            <Text style={styles.roleTitle}>Olá, {userName}!</Text>
-            <Text style={styles.roleSubtitle}>Selecione seu tipo de usuário:</Text>
-
-            <View style={styles.roleContainer}>
-              <TouchableOpacity
-                style={[
-                  styles.roleCard,
-                  selectedRole === "Produtor" && styles.selectedRoleCard,
-                ]}
-                onPress={() => setSelectedRole("Produtor")}
-              >
-                <Ionicons 
-                  name="leaf-outline" 
-                  size={32} 
-                  color={selectedRole === "Produtor" ? "#fff" : "#4ade80"} 
-                />
-                <Text
-                  style={[
-                    styles.roleText,
-                    selectedRole === "Produtor" && styles.selectedRoleText,
-                  ]}
-                >
-                  👨‍🌾 Produtor
-                </Text>
-                <Text
-                  style={[
-                    styles.roleDescription,
-                    selectedRole === "Produtor" && styles.selectedRoleDescription,
-                  ]}
-                >
-                  Gerencia fazendas e propriedades
-                </Text>
-              </TouchableOpacity>
-
-              <TouchableOpacity
-                style={[
-                  styles.roleCard,
-                  selectedRole === "Gestor" && styles.selectedRoleCard,
-                ]}
-                onPress={() => setSelectedRole("Gestor")}
-              >
-                <Ionicons 
-                  name="business-outline" 
-                  size={32} 
-                  color={selectedRole === "Gestor" ? "#fff" : "#4ade80"} 
-                />
-                <Text
-                  style={[
-                    styles.roleText,
-                    selectedRole === "Gestor" && styles.selectedRoleText,
-                  ]}
-                >
-                  📊 Gestor
-                </Text>
-                <Text
-                  style={[
-                    styles.roleDescription,
-                    selectedRole === "Gestor" && styles.selectedRoleDescription,
-                  ]}
-                >                  Administra empresas e produtores
-                </Text>
-              </TouchableOpacity>
-            </View>
-
-            <PrimaryButton
-              label="Entrar"
-              onPress={handleLogin}
-              style={{ marginTop: 25, width: "100%" }}
-            />
-
-            <TouchableOpacity onPress={resetLogin} style={styles.backButton}>
-              <Text style={styles.backButtonText}>← Voltar</Text>
-            </TouchableOpacity>
-          </>
-        )}
-
-        <Text style={styles.orText}>ou continue com</Text>
-
-        <View style={styles.socialContainer}>
-          <TouchableOpacity style={styles.socialButton}>
-            <Ionicons name="logo-google" size={22} color="#DB4437" />
-          </TouchableOpacity>
-          <TouchableOpacity style={styles.socialButton}>
-            <Ionicons name="logo-apple" size={22} color="#000" />
-          </TouchableOpacity>
+          <View style={styles.featuresList}>
+            {features.map((item) => (
+              <View key={item.title} style={styles.featureRow}>
+                <View style={styles.featureIcon}>
+                  <Ionicons name={item.icon as any} size={20} color="#86efac" />
+                </View>
+                <View style={styles.featureText}>
+                  <Text style={styles.featureTitle}>{item.title}</Text>
+                  <Text style={styles.featureDesc}>{item.desc}</Text>
+                </View>
+              </View>
+            ))}
+          </View>
         </View>
 
-        <View style={{ marginTop: 25 }}>
-          <LinkText
-            text="Ainda não tem conta?"
-            highlight="Cadastre-se"
-            onPress={() => router.push("/(auth)/Register")}
+        <View style={styles.card}>
+          <Text style={styles.cardTitle}>Entrar</Text>
+          <Text style={styles.cardSubtitle}>Acesse o painel da sua fazenda</Text>
+
+          <View style={styles.inputWrapper}>
+            <Ionicons name="mail-outline" size={20} color={theme.colors.primary} style={styles.icon} />
+            <TextInput
+              style={styles.loginInput}
+              placeholder="Email"
+              placeholderTextColor={theme.colors.textMuted}
+              value={email}
+              onChangeText={setEmail}
+              autoCapitalize="none"
+              keyboardType="email-address"
+            />
+          </View>
+
+          <View style={styles.inputWrapper}>
+            <Ionicons name="lock-closed-outline" size={20} color={theme.colors.primary} style={styles.icon} />
+            <TextInput
+              style={styles.loginInput}
+              placeholder="Senha"
+              placeholderTextColor={theme.colors.textMuted}
+              value={password}
+              onChangeText={setPassword}
+              secureTextEntry
+            />
+          </View>
+
+          <PrimaryButton
+            label="Entrar"
+            onPress={handleLogin}
+            style={{ marginTop: 16, width: "100%" }}
           />
+
+          <Text style={styles.orText}>ou continue com</Text>
+
+          <View style={styles.socialContainer}>
+            <TouchableOpacity style={styles.socialButton}>
+              <Ionicons name="logo-google" size={20} color="#DB4437" />
+            </TouchableOpacity>
+            <TouchableOpacity style={styles.socialButton}>
+              <Ionicons name="logo-apple" size={20} color="#111" />
+            </TouchableOpacity>
+          </View>
+
+          <View style={{ marginTop: 20 }}>
+            <LinkText
+              text="Ainda nao tem conta?"
+              highlight="Cadastre-se"
+              onPress={() => router.push("/(auth)/Register")}
+            />
+          </View>
         </View>
-      </View>
+      </ScrollView>
     </ImageBackground>
   );
 }
 
 const styles = StyleSheet.create({
-  container: { flex: 1, justifyContent: "center" },
+  container: { flex: 1 },
   overlay: {
     position: "absolute",
     top: 0,
     left: 0,
     right: 0,
     bottom: 0,
-    backgroundColor: "rgba(0,0,0,0.35)",
+    backgroundColor: theme.colors.backgroundOverlay,
   },
-  content: { padding: 25, alignItems: "center", justifyContent: "center" },
+  scrollContent: {
+    padding: 24,
+    paddingTop: 70,
+    paddingBottom: 40,
+  },
+  brandSection: {
+    marginBottom: 24,
+  },
+  brandTitle: {
+    fontSize: 26,
+    fontWeight: "800",
+    color: theme.colors.textLight,
+    textAlign: "left",
+    marginTop: 8,
+  },
+  brandHighlight: {
+    color: "#86efac",
+  },
+  brandSubtitle: {
+    marginTop: 10,
+    fontSize: 15,
+    color: "rgba(248, 250, 252, 0.8)",
+  },
+  featuresList: {
+    marginTop: 18,
+    gap: 12,
+  },
+  featureRow: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 12,
+  },
+  featureIcon: {
+    width: 36,
+    height: 36,
+    borderRadius: 12,
+    backgroundColor: "rgba(255,255,255,0.12)",
+    alignItems: "center",
+    justifyContent: "center",
+  },
+  featureText: { flex: 1 },
+  featureTitle: {
+    color: theme.colors.textLight,
+    fontWeight: "700",
+    fontSize: 14,
+  },
+  featureDesc: {
+    color: "rgba(248, 250, 252, 0.7)",
+    fontSize: 13,
+    marginTop: 2,
+  },
+  card: {
+    backgroundColor: theme.colors.card,
+    borderRadius: theme.radius.xl,
+    padding: 22,
+    ...theme.shadow.card,
+  },
+  cardTitle: {
+    fontSize: 22,
+    fontWeight: "800",
+    color: theme.colors.textPrimary,
+  },
+  cardSubtitle: {
+    fontSize: 13,
+    color: theme.colors.textMuted,
+    marginTop: 6,
+    marginBottom: 16,
+  },
   inputWrapper: {
     flexDirection: "row",
     alignItems: "center",
     backgroundColor: "#fff",
-    borderRadius: 12,
-    paddingHorizontal: 10,
-    marginVertical: 8,
-    width: "90%",
-    height: 50,
-    shadowColor: "#000",
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.1,
-    shadowRadius: 3,
-    elevation: 2,
-    alignSelf: "center",
-  },
-  loginInput: { flex: 1, fontSize: 16, color: "#000", backgroundColor: "transparent" },
-  icon: { marginRight: 8 },
-  roleTitle: {
-    fontSize: 22,
-    fontWeight: "bold",
-    color: "#fff",
-    textAlign: "center",
-    marginBottom: 8,
-  },
-  roleSubtitle: {
-    fontSize: 16,
-    color: "#ddd",
-    textAlign: "center",
-    marginBottom: 20,
-  },
-  roleContainer: {
+    borderRadius: theme.radius.md,
+    paddingHorizontal: 12,
+    marginVertical: 6,
     width: "100%",
-    marginBottom: 20,
+    height: 50,
+    borderWidth: 1,
+    borderColor: theme.colors.border,
   },
-  roleCard: {
-    backgroundColor: "rgba(255,255,255,0.95)",
-    borderRadius: 15,
-    padding: 20,
-    marginVertical: 8,
-    alignItems: "center",
-    borderWidth: 2,
-    borderColor: "transparent",
-  },
-  selectedRoleCard: {
-    backgroundColor: "#4ade80",
-    borderColor: "#22c55e",
-  },
-  roleText: {
-    fontSize: 18,
-    fontWeight: "bold",
-    color: "#333",
-    marginTop: 8,
-  },
-  selectedRoleText: {
-    color: "#fff",
-  },
-  roleDescription: {
-    fontSize: 14,
-    color: "#666",
-    marginTop: 4,
-    textAlign: "center",
-  },
-  selectedRoleDescription: {
-    color: "#f0f9ff",
-  },
-  backButton: {
-    marginTop: 15,
-    padding: 10,
-  },
-  backButtonText: {
-    color: "#4ade80",
-    fontSize: 16,
-    fontWeight: "500",
-  },
-  orText: { color: "#fff", marginTop: 20, marginBottom: 10, fontSize: 14 },
+  loginInput: { flex: 1, fontSize: 15, color: theme.colors.textPrimary, backgroundColor: "transparent" },
+  icon: { marginRight: 8 },
+  orText: { color: theme.colors.textMuted, marginTop: 16, marginBottom: 10, fontSize: 12, textAlign: "center" },
   socialContainer: { flexDirection: "row", justifyContent: "center", gap: 16 },
-  socialButton: { backgroundColor: "#fff", padding: 12, borderRadius: 50, elevation: 3 },
+  socialButton: {
+    backgroundColor: "#fff",
+    padding: 12,
+    borderRadius: 50,
+    borderWidth: 1,
+    borderColor: theme.colors.border,
+  },
 });

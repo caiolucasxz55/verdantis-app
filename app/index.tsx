@@ -7,20 +7,24 @@ export default function Index() {
   const { user, loading } = useContext(AuthContext);
   const router = useRouter();
   useEffect(() => {
-   
     if (!loading) {
       if (!user) {
-        
         router.replace("/(auth)/Login");
-      } else if (user.userType?.userDescription === "Gestor") {
-        router.replace("/(gestor)/Home");
-      } else if (user.userType?.userDescription === "Produtor") {
-        router.replace("/(produtor)/Home");
+      } else {
+        router.replace("/(tabs)/dashboard");
       }
     }
-  }, [user, loading]);
+  }, [user, loading, router]);
 
   
+  if (loading) {
+    return (
+      <View style={styles.container}>
+        <ActivityIndicator size="large" color="#2e7d32" />
+      </View>
+    );
+  }
+
   return (
     <View style={styles.container}>
       <ActivityIndicator size="large" color="#2e7d32" />

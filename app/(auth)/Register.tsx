@@ -13,45 +13,38 @@ import InputField from "../../components/generic/InputField";
 import PrimaryButton from "../../components/generic/PrimaryButton";
 import LinkText from "../../components/generic/LinkText";
 import { useAuth } from "../../hooks/useAuth";
+import { Ionicons } from "@expo/vector-icons";
+import LogoHeader from "../../components/generic/LogoHeader";
+import { theme } from "../../components/generic/theme";
 
 export default function RegisterScreen() {
   const { register } = useAuth();
   const router = useRouter();
 
-  const [selectedRole, setSelectedRole] = useState<"Gestor" | "Produtor" | null>(null);
-
   const [nome, setNome] = useState("");
   const [email, setEmail] = useState("");
-  const [telefone, setTelefone] = useState("");
-  const [cnpj, setCnpj] = useState("");
-  const [empresa, setEmpresa] = useState("");
+  const [senha, setSenha] = useState("");
+
+  const benefits = [
+    { icon: "checkmark-circle-outline", title: "Cadastro gratuito", desc: "Comece sem custos iniciais" },
+    { icon: "shield-checkmark-outline", title: "Dados protegidos", desc: "Seguranca e privacidade garantidas" },
+    { icon: "leaf-outline", title: "Suporte completo", desc: "Equipe dedicada ao seu sucesso" },
+  ];
 
   const handleRegister = async () => {
-    if (!selectedRole)
-      return Alert.alert("Erro", "Selecione o tipo de usuário.");
-
-    if (!nome || !email || !telefone)
-      return Alert.alert("Erro", "Preencha todos os campos obrigatórios.");
-
-    if (selectedRole === "Gestor" && (!cnpj || !empresa))
-      return Alert.alert("Erro", "Preencha o CNPJ e o nome da empresa.");
+    if (!nome || !email || !senha) {
+      return Alert.alert("Erro", "Preencha todos os campos obrigatorios.");
+    }
 
     try {
-      // Monta o payload conforme RegisterData (usado pelo context.register)
-      const payload = {
-        userType: selectedRole,
-        nome,
-        email,
-        telefone,
-        ...(selectedRole === "Gestor" ? { cnpj, empresa } : {}),
-      };
+      const ok = await register({ name: nome, email, password: senha });
+      if (!ok) {
+        Alert.alert("Erro", "Falha ao realizar cadastro.");
+        return;
+      }
 
-      console.log("📦 Enviando payload:", JSON.stringify(payload, null, 2));
-
-      await register(payload);
-
-      Alert.alert("Sucesso", "Usuário cadastrado com sucesso!");
-      router.replace("/(auth)/Login");
+      Alert.alert("Sucesso", "Conta criada com sucesso!");
+      router.replace("/(tabs)/dashboard");
     } catch (err: any) {
       console.error("Erro no registro:", err);
       Alert.alert("Erro", err.message || "Falha ao realizar cadastro.");
@@ -63,101 +56,64 @@ export default function RegisterScreen() {
       source={require("../../assets/agro-image-2.png")}
       style={styles.container}
     >
-      <ScrollView contentContainerStyle={styles.scrollContainer}>
-        <View style={styles.card}>
-          <Text style={styles.title}>Cadastro de Usuário</Text>
-          <Text style={styles.subtitle}>Selecione o tipo de usuário:</Text>
-
-          <View style={styles.roleContainer}>
-            <TouchableOpacity
-              style={[
-                styles.roleButton,
-                selectedRole === "Produtor" && styles.selectedRole,
-              ]}
-              onPress={() => setSelectedRole("Produtor")}
-            >
-              <Text
-                style={[
-                  styles.roleText,
-                  selectedRole === "Produtor" && styles.selectedText,
-                ]}
-              >
-                👨‍🌾 Produtor
-              </Text>
-              <Text style={styles.roleDescription}>
-                Gerencia fazendas e propriedades
-              </Text>
-            </TouchableOpacity>
-
-            <TouchableOpacity
-              style={[
-                styles.roleButton,
-                selectedRole === "Gestor" && styles.selectedRole,
-              ]}
-              onPress={() => setSelectedRole("Gestor")}
-            >
-              <Text
-                style={[
-                  styles.roleText,
-                  selectedRole === "Gestor" && styles.selectedText,
-                ]}
-              >
-                📊 Gestor
-              </Text>
-              <Text style={styles.roleDescription}>
-                Administra empresas e produtores
-              </Text>
-            </TouchableOpacity>
+      <View style={styles.overlay} />
+      <ScrollView contentContainerStyle={styles.scrollContainer} showsVerticalScrollIndicator={false}>
+        <View style={styles.brandSection}>
+          <LogoHeader />
+          <Text style={styles.brandTitle}>
+            Crie sua <Text style={styles.brandHighlight}>conta</Text>
+          </Text>
+          <Text style={styles.brandSubtitle}>
+            Comece a controlar a lucratividade dos seus lotes e tome decisoes melhores para a sua producao.
+          </Text>
+          <View style={styles.benefitsList}>
+            {benefits.map((item) => (
+              <View key={item.title} style={styles.benefitRow}>
+                <View style={styles.benefitIcon}>
+                  <Ionicons name={item.icon as any} size={20} color="#86efac" />
+                </View>
+                <View>
+                  <Text style={styles.benefitTitle}>{item.title}</Text>
+                  <Text style={styles.benefitDesc}>{item.desc}</Text>
+                </View>
+              </View>
+            ))}
           </View>
+        </View>
 
-          {selectedRole && (
-            <>
-              <InputField
-                placeholder="Nome completo"
-                value={nome}
-                onChangeText={setNome}
-              />
-              <InputField
-                placeholder={
-                  selectedRole === "Gestor"
-                    ? "E-mail empresarial"
-                    : "E-mail pessoal"
-                }
-                value={email}
-                onChangeText={setEmail}
-              />
-              <InputField
-                placeholder="Telefone"
-                value={telefone}
-                onChangeText={setTelefone}
-              />
+        <View style={styles.card}>
+          <Text style={styles.title}>Criar Conta</Text>
+          <Text style={styles.subtitle}>Cadastro do produtor</Text>
 
-              {selectedRole === "Gestor" && (
-                <>
-                  <InputField
-                    placeholder="CNPJ da empresa"
-                    value={cnpj}
-                    onChangeText={setCnpj}
-                  />
-                  <InputField
-                    placeholder="Nome da empresa"
-                    value={empresa}
-                    onChangeText={setEmpresa}
-                  />
-                </>
-              )}
+          <InputField
+            label="Nome completo"
+            placeholder="Ex: Joao Pedro"
+            value={nome}
+            onChangeText={setNome}
+          />
+          <InputField
+            label="Email"
+            placeholder="seu@email.com"
+            value={email}
+            onChangeText={setEmail}
+          />
+          <InputField
+            label="Senha"
+            placeholder="Crie uma senha"
+            value={senha}
+            onChangeText={setSenha}
+            secureTextEntry
+          />
 
-              <PrimaryButton
-                label="Cadastrar"
-                onPress={handleRegister}
-                style={{ marginTop: 20 }}
-              />
-            </>
-          )}
+          <PrimaryButton
+            label="Cadastrar"
+            onPress={handleRegister}
+            style={{ marginTop: 16 }}
+          />
 
-          <View style={{ marginTop: 25 }}>
+          <View style={{ marginTop: 20 }}>
             <LinkText
-              text="Já possui uma conta?"
+              text="Ja possui uma conta?"
               highlight="Fazer login"
               onPress={() => router.push("/(auth)/Login")}
             />
@@ -170,52 +126,65 @@ export default function RegisterScreen() {
 
 const styles = StyleSheet.create({
   container: { flex: 1 },
+  overlay: {
+    position: "absolute",
+    top: 0,
+    left: 0,
+    right: 0,
+    bottom: 0,
+    backgroundColor: theme.colors.backgroundOverlay,
+  },
   scrollContainer: {
     flexGrow: 1,
-    justifyContent: "center",
-    alignItems: "center",
-    padding: 20,
+    padding: 24,
+    paddingTop: 70,
+    paddingBottom: 40,
   },
+  brandSection: {
+    marginBottom: 24,
+  },
+  brandTitle: {
+    fontSize: 26,
+    fontWeight: "800",
+    color: theme.colors.textLight,
+  },
+  brandHighlight: { color: "#86efac" },
+  brandSubtitle: {
+    marginTop: 10,
+    fontSize: 15,
+    color: "rgba(248, 250, 252, 0.8)",
+  },
+  benefitsList: { marginTop: 18, gap: 12 },
+  benefitRow: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 12,
+  },
+  benefitIcon: {
+    width: 36,
+    height: 36,
+    borderRadius: 12,
+    backgroundColor: "rgba(255,255,255,0.12)",
+    alignItems: "center",
+    justifyContent: "center",
+  },
+  benefitTitle: { color: theme.colors.textLight, fontWeight: "700", fontSize: 14 },
+  benefitDesc: { color: "rgba(248, 250, 252, 0.7)", fontSize: 13, marginTop: 2 },
   card: {
-    backgroundColor: "rgba(255,255,255,0.95)",
-    borderRadius: 20,
-    padding: 25,
-    width: "100%",
-    maxWidth: 400,
-    shadowColor: "#000",
-    shadowOpacity: 0.1,
-    shadowRadius: 10,
-    elevation: 4,
+    backgroundColor: theme.colors.card,
+    borderRadius: theme.radius.xl,
+    padding: 22,
+    ...theme.shadow.card,
   },
   title: {
-    fontSize: 26,
-    fontWeight: "bold",
-    textAlign: "center",
-    color: "#1b5e20",
+    fontSize: 22,
+    fontWeight: "800",
+    color: theme.colors.textPrimary,
   },
   subtitle: {
-    textAlign: "center",
-    marginVertical: 15,
-    color: "#444",
-    fontSize: 15,
+    color: theme.colors.textMuted,
+    marginTop: 6,
+    marginBottom: 14,
+    fontSize: 13,
   },
-  roleContainer: {
-    flexDirection: "row",
-    justifyContent: "space-between",
-    marginBottom: 20,
-  },
-  roleButton: {
-    flex: 1,
-    borderWidth: 1,
-    borderColor: "#ccc",
-    borderRadius: 10,
-    padding: 14,
-    marginHorizontal: 5,
-    alignItems: "center",
-    backgroundColor: "#fff",
-  },
-  selectedRole: { borderColor: "#2e7d32", backgroundColor: "#c8e6c9" },
-  roleText: { fontWeight: "bold", fontSize: 16, color: "#333" },
-  selectedText: { color: "#1b5e20" },
-  roleDescription: { fontSize: 12, color: "#666", marginTop: 4 },
 });

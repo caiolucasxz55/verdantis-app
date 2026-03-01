@@ -1,38 +1,25 @@
-export interface ContactType {
-  contactTypeId: number;
-  contactTypeName?: string;
-}
-
-export interface UserContact {
-  contactType: ContactType;
-  value: string;
-}
-
-export interface UserType {
-  userTypeId: number;
-  userDescription: "Gestor" | "Produtor";
-}
-
 export interface User {
-  userId?: number;
-  userName: string;
-  registrationDate: string;
-  userType: UserType;
-  contacts?: UserContact[];
+  id: string;
+  name: string;
+  email: string;
+  registrationDate?: string;
 }
 
 export interface RegisterData {
-  nome: string;
+  name: string;
   email: string;
-  telefone: string;
-  userType: "Gestor" | "Produtor";
+  password: string;
+}
+
+export interface LoginData {
+  email: string;
+  password: string;
 }
 
 export interface AuthContextData {
   user: User | null;
   loading: boolean;
-  login: () => Promise<User[]>; // ✅ AGORA RETORNA LISTA
-  setUserFromLogin: (userData: User) => Promise<void>;
-  register: (data: RegisterData) => Promise<void>;
+  login: (data: LoginData) => Promise<boolean>;
+  register: (data: RegisterData) => Promise<boolean>;
   logout: () => Promise<void>;
 }

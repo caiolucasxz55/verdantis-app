@@ -1,6 +1,7 @@
 import React from "react";
 import { View, TextInput, StyleSheet, Text } from "react-native";
 import { InputFieldProps } from "../../types/fields";
+import { theme } from "./theme";
 
 
 export default function InputField({ label, placeholder, secureTextEntry, value, onChangeText }: InputFieldProps) {
@@ -10,7 +11,7 @@ export default function InputField({ label, placeholder, secureTextEntry, value,
       <TextInput
         style={styles.input}
         placeholder={placeholder}
-        placeholderTextColor="#888"
+        placeholderTextColor={theme.colors.textMuted}
         secureTextEntry={secureTextEntry}
         value={value}
         onChangeText={onChangeText}
@@ -21,15 +22,15 @@ export default function InputField({ label, placeholder, secureTextEntry, value,
 
 const styles = StyleSheet.create({
   container: { marginVertical: 8, width: "100%" },
-  label: { fontSize: 15, marginBottom: 4, color: "#333" },
+  label: { fontSize: 13, marginBottom: 6, color: theme.colors.textMuted, fontWeight: "600" },
   input: {
-    height: 48,
+    height: 50,
     borderWidth: 1,
-    borderColor: "#ccc",
-    borderRadius: 10,
-    paddingHorizontal: 12,
+    borderColor: theme.colors.border,
+    borderRadius: theme.radius.md,
+    paddingHorizontal: 14,
     backgroundColor: "#fff",
-    fontSize: 16,
-    color: "#000",
+    fontSize: 15,
+    color: theme.colors.textPrimary,
   },
 });
