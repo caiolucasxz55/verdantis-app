@@ -1,6 +1,5 @@
 import React, { useMemo, useState } from "react";
-import { Text, StyleSheet, TextInput, View, ScrollView, Modal, Pressable } from "react-native";
-import { useRouter } from "expo-router";
+import { Text, StyleSheet, TextInput, View, ScrollView, Modal } from "react-native";
 import { ScreenContainer } from "../../../components/ScreenContainer";
 import { LotCard } from "../../../components/LotCard";
 import { AppButton } from "../../../components/AppButton";
@@ -16,9 +15,10 @@ const initialLots: Lote[] = [
 ];
 
 export default function LotsScreen() {
-  const router = useRouter();
   const [lots, setLots] = useState<Lote[]>(initialLots);
   const [formData, setFormData] = useState<LoteFormData>({ name: "", crop: "", production: 0, cost: 0, salePrice: 0 });
+  const [isFormOpen, setIsFormOpen] = useState(false);
+  const [selectedLot, setSelectedLot] = useState<Lote | null>(null);
 
   const profitPreview = useMemo(() => {
     const revenue = formData.production * formData.salePrice;
@@ -39,9 +39,10 @@ export default function LotsScreen() {
     const newLot: Lote = { id, name: formData.name || `Lote ${id}`, crop: formData.crop || "—", production: formData.production, cost: formData.cost, salePrice: formData.salePrice, revenue, profit, margin, status: "Ativo", propertyName: "Minha Fazenda" };
     setLots((prev) => [newLot, ...prev]);
     setFormData({ name: "", crop: "", production: 0, cost: 0, salePrice: 0 });
+    setIsFormOpen(false);
   };
 
-  const [selectedLot, setSelectedLot] = useState<Lote | null>(null);
+  const closeDetails = () => setSelectedLot(null);
 
   return (
     <ScreenContainer>
@@ -49,30 +50,9 @@ export default function LotsScreen() {
         <Text style={styles.title}>Lotes</Text>
         <Text style={styles.subtitle}>Crie e gerencie seus lotes abaixo</Text>
 
-        <AppCard style={styles.formCard}>
-          <Text style={styles.label}>Nome do lote</Text>
-          <TextInput style={styles.input} placeholder="Ex: Lote A1" placeholderTextColor={theme.colors.textMuted} value={formData.name} onChangeText={(v) => updateField("name", v)} />
-
-          <Text style={styles.label}>Cultura</Text>
-          <TextInput style={styles.input} placeholder="Ex: Milho" placeholderTextColor={theme.colors.textMuted} value={formData.crop} onChangeText={(v) => updateField("crop", v)} />
-
-          <Text style={styles.label}>Producao (ton)</Text>
-          <TextInput style={styles.input} placeholder="Ex: 180" placeholderTextColor={theme.colors.textMuted} keyboardType="numeric" value={formData.production ? String(formData.production) : ""} onChangeText={(v) => updateField("production", v)} />
-
-          <Text style={styles.label}>Custo (R$)</Text>
-          <TextInput style={styles.input} placeholder="Ex: 9800" placeholderTextColor={theme.colors.textMuted} keyboardType="numeric" value={formData.cost ? String(formData.cost) : ""} onChangeText={(v) => updateField("cost", v)} />
-
-          <Text style={styles.label}>Preco de venda (R$)</Text>
-          <TextInput style={styles.input} placeholder="Ex: 85" placeholderTextColor={theme.colors.textMuted} keyboardType="numeric" value={formData.salePrice ? String(formData.salePrice) : ""} onChangeText={(v) => updateField("salePrice", v)} />
-
-          <View style={styles.previewRow}>
-            <Text style={styles.previewText}>Receita: R$ {profitPreview.revenue.toLocaleString("pt-BR")}</Text>
-            <Text style={styles.previewText}>Lucro: R$ {profitPreview.profit.toLocaleString("pt-BR")}</Text>
-            <Text style={styles.previewText}>Margem: {profitPreview.margin.toFixed(1)}%</Text>
-          </View>
-
-          <AppButton label="Salvar lote" onPress={saveLot} />
-        </AppCard>
+        <View style={styles.actionsRow}>
+          <AppButton label="Novo lote" onPress={() => setIsFormOpen(true)} />
+        </View>
 
         <View style={styles.listContainer}>
           {lots.map((lot) => (
@@ -80,6 +60,45 @@ export default function LotsScreen() {
           ))}
         </View>
       </ScrollView>
+
+      <Modal visible={isFormOpen} animationType="slide" transparent>
+        <View style={styles.modalOverlay}>
+          <View style={styles.modalContent}>
+            <ScrollView showsVerticalScrollIndicator={false}>
+              <Text style={styles.title}>Novo lote</Text>
+              <Text style={styles.subtitle}>Preencha os dados do lote</Text>
+
+              <AppCard style={styles.formCard}>
+                <Text style={styles.label}>Nome do lote</Text>
+                <TextInput style={styles.input} placeholder="Ex: Lote A1" placeholderTextColor={theme.colors.textMuted} value={formData.name} onChangeText={(v) => updateField("name", v)} />
+
+                <Text style={styles.label}>Cultura</Text>
+                <TextInput style={styles.input} placeholder="Ex: Milho" placeholderTextColor={theme.colors.textMuted} value={formData.crop} onChangeText={(v) => updateField("crop", v)} />
+
+                <Text style={styles.label}>Producao (ton)</Text>
+                <TextInput style={styles.input} placeholder="Ex: 180" placeholderTextColor={theme.colors.textMuted} keyboardType="numeric" value={formData.production ? String(formData.production) : ""} onChangeText={(v) => updateField("production", v)} />
+
+                <Text style={styles.label}>Custo (R$)</Text>
+                <TextInput style={styles.input} placeholder="Ex: 9800" placeholderTextColor={theme.colors.textMuted} keyboardType="numeric" value={formData.cost ? String(formData.cost) : ""} onChangeText={(v) => updateField("cost", v)} />
+
+                <Text style={styles.label}>Preco de venda (R$)</Text>
+                <TextInput style={styles.input} placeholder="Ex: 85" placeholderTextColor={theme.colors.textMuted} keyboardType="numeric" value={formData.salePrice ? String(formData.salePrice) : ""} onChangeText={(v) => updateField("salePrice", v)} />
+
+                <View style={styles.previewRow}>
+                  <Text style={styles.previewText}>Receita: R$ {profitPreview.revenue.toLocaleString("pt-BR")}</Text>
+                  <Text style={styles.previewText}>Lucro: R$ {profitPreview.profit.toLocaleString("pt-BR")}</Text>
+                  <Text style={styles.previewText}>Margem: {profitPreview.margin.toFixed(1)}%</Text>
+                </View>
+
+                <AppButton label="Salvar lote" onPress={saveLot} />
+                <View style={{ marginTop: 10 }}>
+                  <AppButton label="Cancelar" onPress={() => setIsFormOpen(false)} variant="secondary" />
+                </View>
+              </AppCard>
+            </ScrollView>
+          </View>
+        </View>
+      </Modal>
 
       <Modal visible={!!selectedLot} animationType="slide" transparent>
         <View style={styles.modalOverlay}>
@@ -105,7 +124,7 @@ export default function LotsScreen() {
                 </View>
 
                 <View style={{ marginTop: 12 }}>
-                  <AppButton label="Fechar" onPress={() => setSelectedLot(null)} />
+                  <AppButton label="Fechar" onPress={closeDetails} />
                 </View>
               </>
             )}
@@ -126,6 +145,9 @@ const styles = StyleSheet.create({
     marginTop: 6,
     marginBottom: 12,
     color: theme.colors.textMuted,
+  },
+  actionsRow: {
+    marginBottom: 12,
   },
   formCard: {
     padding: 12,
@@ -161,26 +183,26 @@ const styles = StyleSheet.create({
   },
   modalOverlay: {
     flex: 1,
-    backgroundColor: 'rgba(0,0,0,0.4)',
-    justifyContent: 'flex-end',
+    backgroundColor: theme.colors.backgroundOverlay,
+    justifyContent: "flex-end",
   },
   modalContent: {
-    backgroundColor: '#fff',
+    backgroundColor: theme.colors.card,
     padding: 16,
     borderTopLeftRadius: theme.radius.lg,
     borderTopRightRadius: theme.radius.lg,
-    maxHeight: '70%'
+    maxHeight: "80%",
   },
   grid: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
+    flexDirection: "row",
+    justifyContent: "space-between",
     marginTop: 12,
   },
   statBox: {
     flex: 1,
     padding: 8,
     marginRight: 8,
-    backgroundColor: '#f8fafc',
+    backgroundColor: theme.colors.textLight,
     borderRadius: theme.radius.md,
   },
   statLabel: {
@@ -189,7 +211,7 @@ const styles = StyleSheet.create({
   },
   statValue: {
     fontSize: 16,
-    fontWeight: '700',
+    fontWeight: "700",
     color: theme.colors.textPrimary,
     marginTop: 6,
   },

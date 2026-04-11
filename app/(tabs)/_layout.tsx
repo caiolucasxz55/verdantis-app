@@ -13,7 +13,7 @@ export default function TabsLayout() {
         tabBarIcon: ({ color, size }) => {
           const icons: Record<string, keyof typeof Ionicons.glyphMap> = {
             dashboard: "home-outline",
-            lots: "grid-outline",
+            lotes: "grid-outline",
             analytics: "bar-chart-outline",
             profile: "person-outline",
           };
@@ -23,9 +23,12 @@ export default function TabsLayout() {
       })}
     >
       <Tabs.Screen name="dashboard" options={{ title: "Home" }} />
-      <Tabs.Screen name="lots" options={{ title: "Lotes" }} />
+      <Tabs.Screen name="lotes" options={{ title: "Lotes" }} />
       <Tabs.Screen name="analytics" options={{ title: "Análises" }} />
       <Tabs.Screen name="profile" options={{ title: "Perfil" }} />
+
+      {/* keep module accessible via navigation, but not in the tab bar */}
+      <Tabs.Screen name="cultivation" options={{ href: null }} />
     </Tabs>
   );
 }

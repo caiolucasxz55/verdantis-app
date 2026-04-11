@@ -1,8 +1,10 @@
 import React from "react";
 import { Text, StyleSheet, View, Dimensions } from "react-native";
+import { useRouter } from "expo-router";
 import { ScreenContainer } from "../../components/ScreenContainer";
 import { StatCard } from "../../components/StatCard";
 import { AppCard } from "../../components/AppCard";
+import { AppButton } from "../../components/AppButton";
 import { theme } from "../../components/generic/theme";
 import { BarChart, LineChart } from "react-native-chart-kit";
 import type { Lote } from "../../types/domain";
@@ -39,12 +41,17 @@ const mostProfitableLot = [...lots].sort((a, b) => b.profit - a.profit)[0];
 const mostProfitableCrop = profitByCrop.sort((a, b) => b.lucro - a.lucro)[0];
 
 export default function DashboardScreen() {
+  const router = useRouter();
   const width = Dimensions.get("window").width - 40;
 
   return (
     <ScreenContainer>
       <Text style={styles.title}>Dashboard</Text>
       <Text style={styles.subtitle}>Resumo operacional da sua fazenda</Text>
+
+      <View style={styles.actionsRow}>
+        <AppButton label="Ver cultivos e rastreabilidade" onPress={() => router.push("/(tabs)/cultivation")} variant="secondary" />
+      </View>
 
       <View style={styles.kpiGrid}>
         <StatCard title="Lucro total" value={`R$ ${totalProfit.toLocaleString("pt-BR")}`} />
@@ -123,6 +130,9 @@ const styles = StyleSheet.create({
     marginTop: 6,
     marginBottom: 18,
     color: theme.colors.textMuted,
+  },
+  actionsRow: {
+    marginBottom: 6,
   },
   kpiGrid: {
     gap: 12,
