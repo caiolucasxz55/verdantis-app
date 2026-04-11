@@ -14,7 +14,6 @@ export default function TabsLayout() {
           const icons: Record<string, keyof typeof Ionicons.glyphMap> = {
             dashboard: "home-outline",
             lots: "grid-outline",
-            cultivation: "leaf-outline",
             analytics: "bar-chart-outline",
             profile: "person-outline",
           };
@@ -23,10 +22,9 @@ export default function TabsLayout() {
         },
       })}
     >
-      <Tabs.Screen name="dashboard" options={{ title: "Dashboard" }} />
+      <Tabs.Screen name="dashboard" options={{ title: "Home" }} />
       <Tabs.Screen name="lots" options={{ title: "Lotes" }} />
-      <Tabs.Screen name="cultivation" options={{ title: "Cultivos" }} />
-      <Tabs.Screen name="analytics" options={{ title: "Analytics" }} />
+      <Tabs.Screen name="analytics" options={{ title: "Análises" }} />
       <Tabs.Screen name="profile" options={{ title: "Perfil" }} />
     </Tabs>
   );
