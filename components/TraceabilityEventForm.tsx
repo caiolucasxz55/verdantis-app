@@ -48,6 +48,7 @@ export function TraceabilityEventForm({ lotId, onAddEvent, disabled }: Traceabil
               styles.typeChip,
               type === item.type && styles.typeChipActive,
               disabled && styles.disabled,
+              { marginRight: 8, marginTop: 8 },
             ]}
           >
             <Text style={[styles.typeText, type === item.type && styles.typeTextActive]}>
@@ -76,7 +77,7 @@ export function TraceabilityEventForm({ lotId, onAddEvent, disabled }: Traceabil
 
 const styles = StyleSheet.create({
   container: {
-    gap: 12,
+    paddingVertical: 6,
   },
   label: {
     fontSize: 12,
@@ -86,7 +87,7 @@ const styles = StyleSheet.create({
   typeRow: {
     flexDirection: "row",
     flexWrap: "wrap",
-    gap: 8,
+    marginTop: 8,
   },
   typeChip: {
     paddingVertical: 8,

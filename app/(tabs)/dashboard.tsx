@@ -1,5 +1,5 @@
-import React from "react";
-import { Text, StyleSheet, View, Dimensions } from "react-native";
+import React, { useEffect, useMemo, useState } from "react";
+import { ActivityIndicator, Alert, Dimensions, StyleSheet, Text, View } from "react-native";
 import { useRouter } from "expo-router";
 import { ScreenContainer } from "../../components/ScreenContainer";
 import { StatCard } from "../../components/StatCard";
@@ -7,106 +7,154 @@ import { AppCard } from "../../components/AppCard";
 import { AppButton } from "../../components/AppButton";
 import { theme } from "../../components/generic/theme";
 import { BarChart, LineChart } from "react-native-chart-kit";
-import type { Lote } from "../../types/domain";
-
-const lots: Lote[] = [
-  { id: "1", name: "Lote A1", crop: "Milho", production: 185, cost: 11500, salePrice: 85, revenue: 15725, profit: 4225, margin: 26.9, status: "Ativo", propertyName: "Fazenda Sao Jose" },
-  { id: "2", name: "Lote B2", crop: "Soja", production: 160, cost: 8800, salePrice: 120, revenue: 19200, profit: 10400, margin: 54.2, status: "Ativo", propertyName: "Fazenda Boa Vista" },
-  { id: "3", name: "Lote C3", crop: "Cafe", production: 75, cost: 16200, salePrice: 180, revenue: 13500, profit: -2700, margin: -20.0, status: "Ativo", propertyName: "Fazenda Verde" },
-  { id: "4", name: "Lote D4", crop: "Trigo", production: 130, cost: 7200, salePrice: 70, revenue: 9100, profit: 1900, margin: 20.9, status: "Finalizado", propertyName: "Fazenda Sao Jose" },
-  { id: "5", name: "Lote E5", crop: "Milho", production: 190, cost: 9800, salePrice: 85, revenue: 16150, profit: 6350, margin: 39.3, status: "Ativo", propertyName: "Fazenda Boa Vista" },
-];
-
-const profitOverTime = [
-  { month: "Jan", lucro: 2800 },
-  { month: "Fev", lucro: 3200 },
-  { month: "Mar", lucro: 1500 },
-  { month: "Abr", lucro: 4100 },
-  { month: "Mai", lucro: 3800 },
-  { month: "Jun", lucro: 5200 },
-];
-
-const profitByCrop = [
-  { crop: "Milho", lucro: 10575 },
-  { crop: "Soja", lucro: 10400 },
-  { crop: "Trigo", lucro: 1900 },
-  { crop: "Cafe", lucro: -2700 },
-  { crop: "Alface", lucro: -560 },
-];
-
-const totalProfit = lots.reduce((acc, lot) => acc + lot.profit, 0);
-const totalRevenue = lots.reduce((acc, lot) => acc + lot.revenue, 0);
-const totalCost = lots.reduce((acc, lot) => acc + lot.cost, 0);
-const mostProfitableLot = [...lots].sort((a, b) => b.profit - a.profit)[0];
-const mostProfitableCrop = profitByCrop.sort((a, b) => b.lucro - a.lucro)[0];
+import { getTendenciaLucro, postComparativoCulturas } from "../../api/analytics";
+import { getDashboard } from "../../api/dashboard";
+import { getLotes } from "../../api/lotes";
+import type {
+  ComparativoCulturaDto,
+  DashboardDto,
+  LoteDto,
+  TendenciaLucroDto,
+} from "../../api/types";
 
 export default function DashboardScreen() {
   const router = useRouter();
   const width = Dimensions.get("window").width - 40;
+
+  const toFinite = (value: unknown): number => {
+    const n = typeof value === "number" ? value : Number(value);
+    return Number.isFinite(n) ? n : 0;
+  };
+
+  const [loading, setLoading] = useState(true);
+  const [dashboard, setDashboard] = useState<DashboardDto | null>(null);
+  const [lotes, setLotes] = useState<LoteDto[]>([]);
+  const [tendencias, setTendencias] = useState<TendenciaLucroDto[]>([]);
+  const [comparativoCulturas, setComparativoCulturas] = useState<ComparativoCulturaDto[]>([]);
+
+  useEffect(() => {
+    const run = async () => {
+      try {
+        setLoading(true);
+        const [dashboardData, lotesData, tendenciasData] = await Promise.all([
+          getDashboard(),
+          getLotes(),
+          getTendenciaLucro(),
+        ]);
+
+        setDashboard(dashboardData);
+        setLotes(lotesData);
+        setTendencias(tendenciasData);
+
+        const culturas = Array.from(new Set(lotesData.map((l) => l.cultura).filter(Boolean)));
+        if (culturas.length > 0) {
+          const comp = await postComparativoCulturas({ culturas });
+          setComparativoCulturas(comp);
+        } else {
+          setComparativoCulturas([]);
+        }
+      } catch (err) {
+        console.error("Erro ao carregar dashboard:", err);
+        Alert.alert("Erro", "Não foi possível carregar o dashboard.");
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    run();
+  }, []);
+
+  const totals = useMemo(() => {
+    const totalProfit = lotes.reduce((acc, l) => acc + toFinite(l.lucroEstimado), 0);
+    const totalRevenue = lotes.reduce((acc, l) => acc + toFinite(l.receita), 0);
+    const totalCost = lotes.reduce((acc, l) => acc + toFinite(l.custo), 0);
+    const mostProfitableLot = [...lotes].sort(
+      (a, b) => toFinite(b.lucroEstimado) - toFinite(a.lucroEstimado)
+    )[0];
+    return { totalProfit, totalRevenue, totalCost, mostProfitableLot };
+  }, [lotes]);
 
   return (
     <ScreenContainer>
       <Text style={styles.title}>Dashboard</Text>
       <Text style={styles.subtitle}>Resumo operacional da sua fazenda</Text>
 
+      {loading ? (
+        <View style={styles.loadingBox}>
+          <ActivityIndicator size="large" color={theme.colors.primary} />
+        </View>
+      ) : null}
+
       <View style={styles.actionsRow}>
         <AppButton label="Ver cultivos e rastreabilidade" onPress={() => router.push("/(tabs)/cultivation")} variant="secondary" />
       </View>
 
       <View style={styles.kpiGrid}>
-        <StatCard title="Lucro total" value={`R$ ${totalProfit.toLocaleString("pt-BR")}`} />
-        <StatCard title="Receita total" value={`R$ ${totalRevenue.toLocaleString("pt-BR")}`} />
-        <StatCard title="Custo total" value={`R$ ${totalCost.toLocaleString("pt-BR")}`} />
-        <StatCard title="Cultura mais lucrativa" value={mostProfitableCrop.crop} />
-        <StatCard title="Lote mais lucrativo" value={mostProfitableLot.name} />
+        <StatCard title="Lucro total" value={`R$ ${(dashboard?.lucroTotal ?? totals.totalProfit).toLocaleString("pt-BR")}`} />
+        <StatCard title="Receita total" value={`R$ ${totals.totalRevenue.toLocaleString("pt-BR")}`} />
+        <StatCard title="Custo total" value={`R$ ${totals.totalCost.toLocaleString("pt-BR")}`} />
+        <StatCard title="Cultura mais rentável" value={dashboard?.culturaMaisRentavel ?? "—"} />
+        <StatCard title="Lote mais rentável" value={dashboard?.loteMaisRentavel ?? (totals.mostProfitableLot?.lote ?? "—")} />
       </View>
 
       <AppCard style={styles.chartCard}>
         <Text style={styles.cardTitle}>Lucro por lote</Text>
-        <BarChart
-          data={{
-            labels: lots.map((lot) => lot.name),
-            datasets: [{ data: lots.map((lot) => lot.profit) }],
-          }}
-          width={width}
-          height={220}
-          fromZero
-          yAxisLabel=""
-          yAxisSuffix=""
-          chartConfig={chartConfig}
-          style={styles.chart}
-        />
+        {lotes.length === 0 ? (
+          <Text style={styles.emptyText}>Sem dados para exibir.</Text>
+        ) : (
+          <BarChart
+            data={{
+              labels: lotes.map((lot) => lot.lote),
+              datasets: [{ data: lotes.map((lot) => toFinite(lot.lucroEstimado)) }],
+            }}
+            width={width}
+            height={220}
+            fromZero
+            yAxisLabel=""
+            yAxisSuffix=""
+            chartConfig={chartConfig}
+            style={styles.chart}
+          />
+        )}
       </AppCard>
 
       <AppCard style={styles.chartCard}>
-        <Text style={styles.cardTitle}>Lucro ao longo do tempo</Text>
-        <LineChart
-          data={{
-            labels: profitOverTime.map((item) => item.month),
-            datasets: [{ data: profitOverTime.map((item) => item.lucro) }],
-          }}
-          width={width}
-          height={220}
-          chartConfig={chartConfig}
-          style={styles.chart}
-        />
+        <Text style={styles.cardTitle}>Tendência de lucro (por cultura)</Text>
+        {tendencias.length === 0 ? (
+          <Text style={styles.emptyText}>Sem dados para exibir.</Text>
+        ) : (
+          <LineChart
+            data={{
+              labels: tendencias.map((item) => item.cultura),
+              datasets: [{ data: tendencias.map((item) => toFinite(item.tendenciaLucro)) }],
+            }}
+            width={width}
+            height={220}
+            chartConfig={chartConfig}
+            style={styles.chart}
+          />
+        )}
       </AppCard>
 
       <AppCard style={styles.chartCard}>
         <Text style={styles.cardTitle}>Lucro por cultura</Text>
-        <BarChart
-          data={{
-            labels: profitByCrop.map((item) => item.crop),
-            datasets: [{ data: profitByCrop.map((item) => item.lucro) }],
-          }}
-          width={width}
-          height={220}
-          fromZero
-          yAxisLabel=""
-          yAxisSuffix=""
-          chartConfig={chartConfig}
-          style={styles.chart}
-        />
+        {comparativoCulturas.length === 0 ? (
+          <Text style={styles.emptyText}>Sem dados para exibir.</Text>
+        ) : (
+          <BarChart
+            data={{
+              labels: comparativoCulturas.map((item) => item.cultura),
+              datasets: [{ data: comparativoCulturas.map((item) => toFinite(item.lucroMedio)) }],
+            }}
+            width={width}
+            height={220}
+            fromZero
+            yAxisLabel=""
+            yAxisSuffix=""
+            chartConfig={chartConfig}
+            style={styles.chart}
+          />
+        )}
       </AppCard>
     </ScreenContainer>
   );
@@ -134,11 +182,17 @@ const styles = StyleSheet.create({
   actionsRow: {
     marginBottom: 6,
   },
+  loadingBox: {
+    paddingVertical: 18,
+  },
   kpiGrid: {
     gap: 12,
   },
   chartCard: {
     marginTop: 18,
+  },
+  emptyText: {
+    color: theme.colors.textMuted,
   },
   cardTitle: {
     fontSize: 14,

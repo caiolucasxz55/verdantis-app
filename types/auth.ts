@@ -2,12 +2,15 @@ export interface User {
   id: string;
   name: string;
   email: string;
+  userType?: string;
+  cpf?: string;
   registrationDate?: string;
 }
 
 export interface RegisterData {
   name: string;
   email: string;
+  cpf: string;
   password: string;
 }
 

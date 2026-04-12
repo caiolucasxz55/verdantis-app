@@ -1,24 +1,63 @@
-import React, { useMemo, useState } from "react";
-import { Text, StyleSheet, TextInput, View, ScrollView, Modal } from "react-native";
+import React, { useEffect, useMemo, useState } from "react";
+import { Text, StyleSheet, TextInput, View, ScrollView, Modal, ActivityIndicator, Alert } from "react-native";
 import { ScreenContainer } from "../../../components/ScreenContainer";
 import { LotCard } from "../../../components/LotCard";
 import { AppButton } from "../../../components/AppButton";
 import { AppCard } from "../../../components/AppCard";
 import { theme } from "../../../components/generic/theme";
 import type { Lote, LoteFormData } from "../../../types/domain";
-
-const initialLots: Lote[] = [
-  { id: "1", name: "Lote A1", crop: "Milho", production: 185, cost: 11500, salePrice: 85, revenue: 15725, profit: 4225, margin: 26.9, status: "Ativo", propertyName: "Fazenda Sao Jose" },
-  { id: "2", name: "Lote B2", crop: "Soja", production: 160, cost: 8800, salePrice: 120, revenue: 19200, profit: 10400, margin: 54.2, status: "Ativo", propertyName: "Fazenda Boa Vista" },
-  { id: "3", name: "Lote C3", crop: "Cafe", production: 75, cost: 16200, salePrice: 180, revenue: 13500, profit: -2700, margin: -20.0, status: "Ativo", propertyName: "Fazenda Verde" },
-  { id: "4", name: "Lote D4", crop: "Trigo", production: 130, cost: 7200, salePrice: 70, revenue: 9100, profit: 1900, margin: 20.9, status: "Finalizado", propertyName: "Fazenda Sao Jose" },
-];
+import { createLote, deleteLote, getLotes } from "../../../api/lotes";
+import type { LoteDto } from "../../../api/types";
+import { getApiBaseUrl } from "../../../api/config";
 
 export default function LotsScreen() {
-  const [lots, setLots] = useState<Lote[]>(initialLots);
+  const [lots, setLots] = useState<Lote[]>([]);
   const [formData, setFormData] = useState<LoteFormData>({ name: "", crop: "", production: 0, cost: 0, salePrice: 0 });
   const [isFormOpen, setIsFormOpen] = useState(false);
   const [selectedLot, setSelectedLot] = useState<Lote | null>(null);
+  const [loading, setLoading] = useState(true);
+
+  const mapLoteDtoToUi = (dto: LoteDto): Lote => {
+    const production = dto.producao ?? 0;
+    const cost = dto.custo ?? 0;
+    const revenue = dto.receita ?? 0;
+    const profit = dto.lucroEstimado ?? 0;
+    const salePrice = production > 0 ? revenue / production : 0;
+    const margin = revenue > 0 ? (profit / revenue) * 100 : 0;
+    const status = (dto.status || "ativo").toLowerCase() === "finalizado" ? "Finalizado" : "Ativo";
+    return {
+      id: String(dto.id),
+      name: dto.lote,
+      crop: dto.cultura,
+      production,
+      cost,
+      salePrice,
+      revenue,
+      profit,
+      margin,
+      status,
+      propertyName: "Minha Fazenda",
+    };
+  };
+
+  const loadLots = async () => {
+    try {
+      setLoading(true);
+      const data = await getLotes();
+      setLots(data.map(mapLoteDtoToUi));
+    } catch (err: any) {
+      console.error("Erro ao carregar lotes:", err);
+      const base = getApiBaseUrl();
+      Alert.alert("Erro", `Não foi possível carregar os lotes.\nServidor: ${base}`);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    loadLots();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   const profitPreview = useMemo(() => {
     const revenue = formData.production * formData.salePrice;
@@ -28,18 +67,39 @@ export default function LotsScreen() {
   }, [formData]);
 
   const updateField = (field: keyof LoteFormData, value: string) => {
-    setFormData((prev) => ({ ...prev, [field]: field === "name" || field === "crop" ? value : Number(value) }));
+    const parseNumber = (raw: string): number => {
+      const normalized = raw.replace(/\s/g, "").replace(",", ".");
+      const n = Number(normalized);
+      return Number.isFinite(n) ? n : 0;
+    };
+
+    setFormData((prev) => ({
+      ...prev,
+      [field]: field === "name" || field === "crop" ? value : parseNumber(value),
+    }));
   };
 
-  const saveLot = () => {
-    const id = String(Date.now());
-    const revenue = formData.production * formData.salePrice;
-    const profit = revenue - formData.cost;
-    const margin = revenue > 0 ? (profit / revenue) * 100 : 0;
-    const newLot: Lote = { id, name: formData.name || `Lote ${id}`, crop: formData.crop || "—", production: formData.production, cost: formData.cost, salePrice: formData.salePrice, revenue, profit, margin, status: "Ativo", propertyName: "Minha Fazenda" };
-    setLots((prev) => [newLot, ...prev]);
-    setFormData({ name: "", crop: "", production: 0, cost: 0, salePrice: 0 });
-    setIsFormOpen(false);
+  const saveLot = async () => {
+    try {
+      if (!formData.name.trim() || !formData.crop.trim()) {
+        Alert.alert("Erro", "Informe nome do lote e cultura.");
+        return;
+      }
+      await createLote({
+        nomeLote: formData.name,
+        cultura: formData.crop,
+        producaoTotal: formData.production,
+        custoTotal: formData.cost,
+        precoVenda: formData.salePrice,
+      });
+      setFormData({ name: "", crop: "", production: 0, cost: 0, salePrice: 0 });
+      setIsFormOpen(false);
+      await loadLots();
+    } catch (err: any) {
+      console.error("Erro ao salvar lote:", err);
+      const base = getApiBaseUrl();
+      Alert.alert("Erro", `Não foi possível salvar o lote.\nServidor: ${base}`);
+    }
   };
 
   const closeDetails = () => setSelectedLot(null);
@@ -55,9 +115,13 @@ export default function LotsScreen() {
         </View>
 
         <View style={styles.listContainer}>
-          {lots.map((lot) => (
-            <LotCard key={lot.id} {...lot} onPress={() => setSelectedLot(lot)} />
-          ))}
+          {loading ? (
+            <View style={{ paddingVertical: 18 }}>
+              <ActivityIndicator size="large" color={theme.colors.primary} />
+            </View>
+          ) : (
+            lots.map((lot) => <LotCard key={lot.id} {...lot} onPress={() => setSelectedLot(lot)} />)
+          )}
         </View>
       </ScrollView>
 
@@ -125,6 +189,24 @@ export default function LotsScreen() {
 
                 <View style={{ marginTop: 12 }}>
                   <AppButton label="Fechar" onPress={closeDetails} />
+                </View>
+
+
+                <View style={{ marginTop: 10 }}>
+                  <AppButton
+                    label="Excluir lote"
+                    variant="secondary"
+                    onPress={async () => {
+                      try {
+                        await deleteLote(Number(selectedLot.id));
+                        closeDetails();
+                        await loadLots();
+                      } catch (err: any) {
+                        console.error("Erro ao excluir lote:", err);
+                        Alert.alert("Erro", "Não foi possível excluir o lote.");
+                      }
+                    }}
+                  />
                 </View>
               </>
             )}

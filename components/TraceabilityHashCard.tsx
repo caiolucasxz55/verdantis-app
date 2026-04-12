@@ -29,7 +29,7 @@ export function TraceabilityHashCard({ hash }: TraceabilityHashCardProps) {
 
 const styles = StyleSheet.create({
   card: {
-    gap: 8,
+    paddingBottom: 8,
   },
   title: {
     fontSize: 14,
@@ -39,6 +39,7 @@ const styles = StyleSheet.create({
   hash: {
     fontSize: 12,
     color: theme.colors.textMuted,
+    marginTop: 8,
   },
   copyButton: {
     alignSelf: "flex-start",
@@ -55,5 +56,6 @@ const styles = StyleSheet.create({
   meta: {
     fontSize: 12,
     color: theme.colors.textMuted,
+    marginTop: 6,
   },
 });

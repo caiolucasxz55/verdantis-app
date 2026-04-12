@@ -4,7 +4,15 @@ import { InputFieldProps } from "../../types/fields";
 import { theme } from "./theme";
 
 
-export default function InputField({ label, placeholder, secureTextEntry, value, onChangeText }: InputFieldProps) {
+export default function InputField({
+  label,
+  placeholder,
+  secureTextEntry,
+  keyboardType,
+  autoCapitalize,
+  value,
+  onChangeText,
+}: InputFieldProps) {
   return (
     <View style={styles.container}>
       {label && <Text style={styles.label}>{label}</Text>}
@@ -13,6 +21,8 @@ export default function InputField({ label, placeholder, secureTextEntry, value,
         placeholder={placeholder}
         placeholderTextColor={theme.colors.textMuted}
         secureTextEntry={secureTextEntry}
+        keyboardType={keyboardType}
+        autoCapitalize={autoCapitalize}
         value={value}
         onChangeText={onChangeText}
       />

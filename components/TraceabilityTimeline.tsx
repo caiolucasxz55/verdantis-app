@@ -37,11 +37,11 @@ export function TraceabilityTimeline({ events }: TraceabilityTimelineProps) {
 
 const styles = StyleSheet.create({
   container: {
-    gap: 16,
+    paddingVertical: 4,
   },
   item: {
     flexDirection: "row",
-    gap: 12,
+    marginBottom: 16,
   },
   dot: {
     width: 10,
@@ -52,6 +52,7 @@ const styles = StyleSheet.create({
   },
   content: {
     flex: 1,
+    marginLeft: 12,
   },
   type: {
     fontSize: 12,

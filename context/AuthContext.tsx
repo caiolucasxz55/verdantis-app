@@ -1,8 +1,9 @@
 
 import React, { createContext, useEffect, useState } from "react";
-import AsyncStorage from "@react-native-async-storage/async-storage";
 import { useRouter } from "expo-router";
 import type { AuthContextData, LoginData, RegisterData, User } from "../types/auth";
+import { loginApi, registerApi } from "../api/auth";
+import { clearStoredUser, clearToken, getStoredUser, setStoredUser, setToken } from "../api/storage";
 
 export const AuthContext = createContext<AuthContextData>({
 	user: null,
@@ -19,11 +20,14 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
 
 	useEffect(() => {
 		const loadStoredUser = async () => {
-			const storedUser = await AsyncStorage.getItem("user");
-			if (storedUser) {
-				setUser(JSON.parse(storedUser));
+			try {
+				const storedUser = await getStoredUser<User>();
+				if (storedUser) setUser(storedUser);
+			} catch (error) {
+				console.log("Load stored user error:", error);
+			} finally {
+				setLoading(false);
 			}
-			setLoading(false);
 		};
 
 		loadStoredUser();
@@ -33,15 +37,17 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
 		try {
 			if (!data.email || !data.password) return false;
 
-			const farmer: User = {
-				id: "farmer-1",
-				name: data.email.split("@")[0] || "Produtor",
-				email: data.email,
-				registrationDate: new Date().toISOString(),
+			const res = await loginApi({ email: data.email, senha: data.password });
+			const nextUser: User = {
+				id: String(res.id),
+				name: res.name,
+				email: res.email,
+				userType: res.userType,
 			};
 
-			await AsyncStorage.setItem("user", JSON.stringify(farmer));
-			setUser(farmer);
+			await setToken(res.token);
+			await setStoredUser(nextUser);
+			setUser(nextUser);
 			router.replace("/(tabs)/dashboard");
 			return true;
 		} catch (error) {
@@ -52,17 +58,23 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
 
 	const register = async (data: RegisterData): Promise<boolean> => {
 		try {
-			if (!data.name || !data.email || !data.password) return false;
-
-			const farmer: User = {
-				id: "farmer-1",
-				name: data.name,
+			if (!data.name || !data.email || !data.cpf || !data.password) return false;
+			const res = await registerApi({
+				nomeCompleto: data.name,
 				email: data.email,
-				registrationDate: new Date().toISOString(),
+				cpf: data.cpf,
+				senha: data.password,
+			});
+			const nextUser: User = {
+				id: String(res.id),
+				name: res.name,
+				email: res.email,
+				userType: res.userType,
 			};
 
-			await AsyncStorage.setItem("user", JSON.stringify(farmer));
-			setUser(farmer);
+			await setToken(res.token);
+			await setStoredUser(nextUser);
+			setUser(nextUser);
 			router.replace("/(tabs)/dashboard");
 			return true;
 		} catch (error) {
@@ -72,7 +84,8 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
 	};
 
 	const logout = async () => {
-		await AsyncStorage.removeItem("user");
+		await clearStoredUser();
+		await clearToken();
 		setUser(null);
 		router.replace("/(auth)/Login");
 	};

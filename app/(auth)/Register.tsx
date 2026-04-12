@@ -23,6 +23,7 @@ export default function RegisterScreen() {
 
   const [nome, setNome] = useState("");
   const [email, setEmail] = useState("");
+  const [cpf, setCpf] = useState("");
   const [senha, setSenha] = useState("");
 
   const benefits = [
@@ -32,12 +33,12 @@ export default function RegisterScreen() {
   ];
 
   const handleRegister = async () => {
-    if (!nome || !email || !senha) {
+    if (!nome || !email || !cpf || !senha) {
       return Alert.alert("Erro", "Preencha todos os campos obrigatorios.");
     }
 
     try {
-      const ok = await register({ name: nome, email, password: senha });
+      const ok = await register({ name: nome, email, cpf, password: senha });
       if (!ok) {
         Alert.alert("Erro", "Falha ao realizar cadastro.");
         return;
@@ -96,6 +97,15 @@ export default function RegisterScreen() {
             placeholder="seu@email.com"
             value={email}
             onChangeText={setEmail}
+            keyboardType="email-address"
+            autoCapitalize="none"
+          />
+          <InputField
+            label="CPF"
+            placeholder="000.000.000-00"
+            value={cpf}
+            onChangeText={setCpf}
+            keyboardType="numeric"
           />
           <InputField
             label="Senha"
