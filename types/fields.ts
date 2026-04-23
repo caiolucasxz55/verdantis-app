@@ -2,6 +2,8 @@ export interface InputFieldProps  {
   label?: string;
   placeholder?: string;
   secureTextEntry?: boolean;
+  keyboardType?: import("react-native").TextInputProps["keyboardType"];
+  autoCapitalize?: import("react-native").TextInputProps["autoCapitalize"];
   value?: string;
   onChangeText?: (text: string) => void;
 };
