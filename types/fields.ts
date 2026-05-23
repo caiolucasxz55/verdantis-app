@@ -12,6 +12,7 @@ export interface PrimaryButtonProps {
   label?: string;
   onPress?: () => void;
   style?: any;
+  disabled?: boolean;
 }
 
 export interface LinkTextProps {

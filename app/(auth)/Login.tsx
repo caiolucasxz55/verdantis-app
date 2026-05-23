@@ -8,6 +8,7 @@ import {
   TouchableOpacity,
   TextInput,
   ScrollView,
+  ActivityIndicator,
 } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import { useRouter } from "expo-router";
@@ -23,6 +24,7 @@ export default function LoginScreen() {
 
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [loading, setLoading] = useState(false);
 
   const features = [
     {
@@ -43,19 +45,21 @@ export default function LoginScreen() {
   ];
 
   const handleLogin = async () => {
+    if (!email || !password) {
+      Alert.alert("Erro", "Informe email e senha.");
+      return;
+    }
     try {
-      if (!email || !password) {
-        Alert.alert("Erro", "Informe email e senha.");
-        return;
-      }
-
+      setLoading(true);
       const ok = await login({ email, password });
       if (!ok) {
-        Alert.alert("Erro", "Falha ao realizar login.");
+        Alert.alert("Erro", "Email ou senha incorretos.");
       }
     } catch (err: any) {
       console.error("Erro no login:", err);
       Alert.alert("Erro", err.message || "Falha ao realizar login.");
+    } finally {
+      setLoading(false);
     }
   };
   return (
@@ -119,10 +123,14 @@ export default function LoginScreen() {
           </View>
 
           <PrimaryButton
-            label="Entrar"
+            label={loading ? "Entrando..." : "Entrar"}
             onPress={handleLogin}
             style={{ marginTop: 16, width: "100%" }}
+            disabled={loading}
           />
+          {loading ? (
+            <ActivityIndicator size="small" color={theme.colors.primary} style={{ marginTop: 8 }} />
+          ) : null}
 
           <Text style={styles.orText}>ou continue com</Text>
 
