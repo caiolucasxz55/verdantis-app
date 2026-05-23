@@ -1,11 +1,25 @@
 import React, { useEffect, useMemo, useState } from "react";
-import { Text, StyleSheet, View, ActivityIndicator, TouchableOpacity, Alert } from "react-native";
+import {
+  ActivityIndicator,
+  Alert,
+  StyleSheet,
+  Text,
+  TouchableOpacity,
+  View,
+} from "react-native";
+import { Ionicons } from "@expo/vector-icons";
 import { ScreenContainer } from "../../components/ScreenContainer";
 import { AppCard } from "../../components/AppCard";
 import { theme } from "../../components/generic/theme";
 import { useAuth } from "../../hooks/useAuth";
 import { getUserById } from "../../api/users";
 import type { UserDto } from "../../api/types";
+
+const USER_TYPE_LABEL: Record<string, string> = {
+  PRODUTOR: "Produtor Rural",
+  GESTOR: "Gestor",
+  ADMIN: "Administrador",
+};
 
 export default function ProfileScreen() {
   const { user, logout, loading } = useAuth();
@@ -30,20 +44,34 @@ export default function ProfileScreen() {
         setDetails(data);
       } catch (err) {
         console.error("Erro ao carregar perfil:", err);
-        Alert.alert("Erro", "Não foi possível carregar os detalhes do perfil.");
       } finally {
         setDetailsLoading(false);
       }
     };
-
     void run();
   }, [userId]);
 
   const registrationDate = useMemo(() => {
-    if (!details?.registrationDate) return "";
+    if (!details?.registrationDate) return null;
     const parsed = new Date(details.registrationDate);
-    return Number.isNaN(parsed.getTime()) ? details.registrationDate : parsed.toLocaleDateString("pt-BR");
+    return Number.isNaN(parsed.getTime()) ? null : parsed.toLocaleDateString("pt-BR");
   }, [details?.registrationDate]);
+
+  const initials = useMemo(() => {
+    const name = user?.name ?? "";
+    return name
+      .split(" ")
+      .slice(0, 2)
+      .map((w) => w[0]?.toUpperCase() ?? "")
+      .join("");
+  }, [user?.name]);
+
+  const handleLogout = () => {
+    Alert.alert("Sair", "Deseja encerrar a sessão?", [
+      { text: "Cancelar", style: "cancel" },
+      { text: "Sair", style: "destructive", onPress: logout },
+    ]);
+  };
 
   if (loading) {
     return (
@@ -56,42 +84,115 @@ export default function ProfileScreen() {
   return (
     <ScreenContainer>
       <Text style={styles.title}>Perfil</Text>
-      <Text style={styles.subtitle}>Informacoes do produtor</Text>
+      <Text style={styles.subtitle}>Informações do produtor</Text>
 
+      {/* Avatar */}
+      <View style={styles.avatarSection}>
+        <View style={styles.avatarCircle}>
+          <Text style={styles.avatarText}>{initials || "?"}</Text>
+        </View>
+        <View style={styles.avatarInfo}>
+          <Text style={styles.avatarName}>{user?.name ?? "Produtor"}</Text>
+          <View style={styles.badgeRow}>
+            <View style={styles.badge}>
+              <Ionicons name="shield-checkmark-outline" size={12} color={theme.colors.primary} />
+              <Text style={styles.badgeText}>
+                {USER_TYPE_LABEL[user?.userType ?? ""] ?? user?.userType ?? "Usuário"}
+              </Text>
+            </View>
+          </View>
+        </View>
+      </View>
+
+      {/* Details card */}
       <AppCard style={styles.card}>
-        <Text style={styles.label}>Nome</Text>
-        <Text style={styles.value}>{user?.name ?? "Produtor"}</Text>
-
-        <Text style={styles.label}>Email</Text>
-        <Text style={styles.value}>{user?.email ?? ""}</Text>
+        <InfoRow icon="mail-outline" label="Email" value={user?.email ?? "—"} />
 
         {detailsLoading ? (
-          <View style={{ paddingVertical: 8 }}>
+          <View style={styles.loadingRow}>
             <ActivityIndicator size="small" color={theme.colors.primary} />
+            <Text style={styles.loadingText}>Carregando detalhes...</Text>
           </View>
-        ) : null}
-
-        {details?.cpf ? (
+        ) : (
           <>
-            <Text style={styles.label}>CPF</Text>
-            <Text style={styles.value}>{details.cpf}</Text>
+            {details?.cpf ? (
+              <InfoRow icon="card-outline" label="CPF" value={details.cpf} />
+            ) : null}
+            {registrationDate ? (
+              <InfoRow icon="calendar-outline" label="Membro desde" value={registrationDate} />
+            ) : null}
           </>
-        ) : null}
-
-        {registrationDate ? (
-          <>
-            <Text style={styles.label}>Data de cadastro</Text>
-            <Text style={styles.value}>{registrationDate}</Text>
-          </>
-        ) : null}
+        )}
       </AppCard>
 
-      <TouchableOpacity onPress={logout} style={styles.logoutButton}>
-        <Text style={styles.logoutText}>Sair</Text>
-      </TouchableOpacity>
+      {/* Actions */}
+      <View style={styles.actionsCard}>
+        <TouchableOpacity style={styles.actionRow} onPress={handleLogout}>
+          <View style={[styles.actionIcon, { backgroundColor: theme.colors.errorLight }]}>
+            <Ionicons name="log-out-outline" size={18} color={theme.colors.error} />
+          </View>
+          <Text style={[styles.actionLabel, { color: theme.colors.error }]}>Encerrar sessão</Text>
+          <Ionicons name="chevron-forward" size={16} color={theme.colors.error} />
+        </TouchableOpacity>
+      </View>
     </ScreenContainer>
   );
 }
+
+function InfoRow({
+  icon,
+  label,
+  value,
+}: {
+  icon: keyof typeof Ionicons.glyphMap;
+  label: string;
+  value: string;
+}) {
+  return (
+    <View style={infoStyles.row}>
+      <View style={infoStyles.iconWrap}>
+        <Ionicons name={icon} size={16} color={theme.colors.primary} />
+      </View>
+      <View style={infoStyles.textWrap}>
+        <Text style={infoStyles.label}>{label}</Text>
+        <Text style={infoStyles.value}>{value}</Text>
+      </View>
+    </View>
+  );
+}
+
+const infoStyles = StyleSheet.create({
+  row: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 12,
+    paddingVertical: 8,
+    borderBottomWidth: 1,
+    borderBottomColor: theme.colors.border,
+  },
+  iconWrap: {
+    width: 32,
+    height: 32,
+    borderRadius: theme.radius.sm,
+    backgroundColor: theme.colors.primaryLight,
+    alignItems: "center",
+    justifyContent: "center",
+  },
+  textWrap: { flex: 1 },
+  label: {
+    fontSize: 11,
+    fontWeight: "600",
+    color: theme.colors.textMuted,
+    textTransform: "uppercase",
+    letterSpacing: 0.5,
+  },
+  value: {
+    fontSize: 15,
+    fontWeight: "600",
+    color: theme.colors.textPrimary,
+    marginTop: 2,
+  },
+});
 
 const styles = StyleSheet.create({
   title: {
@@ -100,33 +201,93 @@ const styles = StyleSheet.create({
     color: theme.colors.textPrimary,
   },
   subtitle: {
-    marginTop: 6,
-    marginBottom: 18,
+    marginTop: 4,
+    marginBottom: 20,
     color: theme.colors.textMuted,
+    fontSize: 13,
   },
-  card: {
-    gap: 12,
+  avatarSection: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 16,
+    marginBottom: 20,
   },
-  label: {
-    fontSize: 12,
-    fontWeight: "600",
-    color: theme.colors.textMuted,
+  avatarCircle: {
+    width: 64,
+    height: 64,
+    borderRadius: 32,
+    backgroundColor: theme.colors.primary,
+    alignItems: "center",
+    justifyContent: "center",
+    ...theme.shadow.strong,
   },
-  value: {
-    fontSize: 15,
+  avatarText: {
+    color: "#fff",
+    fontWeight: "800",
+    fontSize: 22,
+  },
+  avatarInfo: { flex: 1 },
+  avatarName: {
+    fontSize: 18,
     fontWeight: "700",
     color: theme.colors.textPrimary,
   },
-  logoutButton: {
-    marginTop: 20,
-    paddingVertical: 14,
+  badgeRow: {
+    flexDirection: "row",
+    marginTop: 4,
+  },
+  badge: {
+    flexDirection: "row",
     alignItems: "center",
+    gap: 4,
+    backgroundColor: theme.colors.primaryLight,
+    borderRadius: theme.radius.full,
+    paddingHorizontal: 8,
+    paddingVertical: 3,
+  },
+  badgeText: {
+    fontSize: 11,
+    fontWeight: "600",
+    color: theme.colors.primaryDark,
+  },
+  card: {
+    gap: 0,
+    paddingVertical: 4,
+    marginBottom: 16,
+  },
+  loadingRow: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 8,
+    paddingVertical: 12,
+  },
+  loadingText: {
+    color: theme.colors.textMuted,
+    fontSize: 13,
+  },
+  actionsCard: {
+    backgroundColor: theme.colors.card,
     borderRadius: theme.radius.md,
-    backgroundColor: "#ef4444",
+    overflow: "hidden",
     ...theme.shadow.soft,
   },
-  logoutText: {
-    color: "#fff",
-    fontWeight: "700",
+  actionRow: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 12,
+    paddingHorizontal: 16,
+    paddingVertical: 14,
+  },
+  actionIcon: {
+    width: 34,
+    height: 34,
+    borderRadius: theme.radius.sm,
+    alignItems: "center",
+    justifyContent: "center",
+  },
+  actionLabel: {
+    flex: 1,
+    fontSize: 15,
+    fontWeight: "600",
   },
 });

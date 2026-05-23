@@ -19,11 +19,7 @@ function toHost(value: unknown): string | null {
   const raw = String(value).trim();
   if (!raw) return null;
 
-  // Typical values:
-  // - "192.168.0.10:19000"
-  // - "192.168.0.10"
-  // - "exp://192.168.0.10:19000"
-  // - "192.168.0.10:19000/--/"
+
   try {
     if (raw.includes("://")) {
       const url = new URL(raw);

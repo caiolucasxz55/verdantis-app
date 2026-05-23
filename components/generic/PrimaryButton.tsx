@@ -4,9 +4,13 @@ import { PrimaryButtonProps } from "../../types/fields";
 import { theme } from "./theme";
 
 
-export default function PrimaryButton({ label, onPress, style }: PrimaryButtonProps) {
+export default function PrimaryButton({ label, onPress, style, disabled }: PrimaryButtonProps) {
   return (
-    <TouchableOpacity style={[styles.button, style]} onPress={onPress}>
+    <TouchableOpacity
+      style={[styles.button, disabled && styles.buttonDisabled, style]}
+      onPress={onPress}
+      disabled={disabled}
+    >
       <Text style={styles.text}>{label}</Text>
     </TouchableOpacity>
   );
@@ -22,6 +26,9 @@ const styles = StyleSheet.create({
     justifyContent: "center",
     marginTop: 16,
     ...theme.shadow.soft,
+  },
+  buttonDisabled: {
+    opacity: 0.6,
   },
   text: {
     color: "#fff",
